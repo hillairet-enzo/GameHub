@@ -1,0 +1,53 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "GameHub",
+  "version": "0.2.0",
+  "identifier": "com.gamehub.app",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:4321",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "GameHub",
+        "width": 1280,
+        "height": 720,
+        "minWidth": 960,
+        "minHeight": 540,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "backgroundColor": "#01060e"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost https://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: data:; connect-src ipc: http://ipc.localhost",
+      "devCsp": "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' asset: http://asset.localhost https://asset.localhost data: blob: http://localhost:4321; font-src 'self' data: http://localhost:4321; media-src 'self' blob: data: http://localhost:4321; connect-src ipc: http://ipc.localhost ws://localhost:4321 http://localhost:4321",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$APPLOCALDATA/GameHub_Data/**"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Game",
+    "shortDescription": "A console-style launcher for your emulators",
+    "longDescription": "GameHub gives your emulators and ROM library a single console-style home screen with gamepad support.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "12.0"
+    }
+  }
+}

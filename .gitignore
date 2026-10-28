@@ -1,24 +1,22 @@
-# build output
-dist/
-
-# generated types
-.astro/
-
-# dependencies
+# dependencies and build output
 node_modules/
+dist/
+.astro/
+src-tauri/target/
+src-tauri/gen/
 
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# GameHub user data (settings, covers, stats) never belongs in the repository
+GameHub_Data/
 
-# environment variables
-.env
-.env.production
-
-# macOS-specific files
-.DS_Store
-
-# jetbrains setting folder
+# editor and local tooling
+.vscode/
 .idea/
+.claude/settings.local.json
+*.log
+.DS_Store
+Thumbs.db
+
+# leftovers from the previous layout
+whole-wasp/
+_a-supprimer/
+_backup_avant_refonte/

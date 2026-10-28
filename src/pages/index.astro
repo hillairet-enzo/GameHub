@@ -1,11 +1,30 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import '@fontsource/chakra-petch/300.css';
+import '@fontsource/chakra-petch/400.css';
+import '@fontsource/chakra-petch/500.css';
+import '@fontsource/chakra-petch/600.css';
+import '@fontsource/chakra-petch/700.css';
+import '@fontsource/nunito-sans/400.css';
+import '@fontsource/nunito-sans/600.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+import '../styles/screens.css';
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<!doctype html>
+<html lang="en" data-theme="ocean" data-motion="full" data-scanlines="on">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="GameHub: a console-style launcher for your emulators." />
+    <title>GameHub</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body data-input="kbd">
+    <div id="app"></div>
+    <script>
+      import '../app/main';
+    </script>
+  </body>
+</html>

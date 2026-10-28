@@ -1,0 +1,74 @@
+/* Design tokens. Each theme only changes the palette; sizes, type and motion are shared. */
+
+:root {
+  /* palette: "ocean" is the default */
+  --bg-grad: linear-gradient(135deg, #041222 0%, #0b4770 32%, #38bdf8 62%, #e0f2fe 100%);
+  --glow-1: radial-gradient(circle, rgb(56 189 248 / 0.5), transparent 70%);
+  --glow-2: radial-gradient(circle, rgb(255 255 255 / 0.55), transparent 70%);
+  --accent: #38bdf8;
+  --accent-rgb: 56 189 248;
+  --accent-hi: #bae6fd;
+  --accent-lo: #0284c7;
+  --accent-deep: #082f49;
+  --ink: 4 18 34;
+
+  /* surfaces */
+  --text: #f4f9ff;
+  --text-dim: rgb(244 249 255 / 0.68);
+  --text-faint: rgb(244 249 255 / 0.46);
+  --glass: rgb(255 255 255 / 0.07);
+  --glass-strong: rgb(var(--ink) / 0.62);
+  --stroke: rgb(255 255 255 / 0.16);
+  --stroke-strong: rgb(255 255 255 / 0.34);
+  --danger: #fb7185;
+  --ok: #34d399;
+  --warn: #fbbf24;
+
+  /* type */
+  --font-display: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Nunito Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+
+  /* shape and motion */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --pad-x: clamp(28px, 6vw, 88px);
+}
+
+[data-theme='matrix'] {
+  --bg-grad: linear-gradient(135deg, #010a01 0%, #0b2e0b 32%, #22c55e 62%, #bbf7d0 100%);
+  --glow-1: radial-gradient(circle, rgb(34 197 94 / 0.5), transparent 70%);
+  --glow-2: radial-gradient(circle, rgb(134 239 172 / 0.4), transparent 70%);
+  --accent: #22c55e;
+  --accent-rgb: 34 197 94;
+  --accent-hi: #bbf7d0;
+  --accent-lo: #15803d;
+  --accent-deep: #052e16;
+  --ink: 1 10 1;
+}
+
+[data-theme='cyberpunk'] {
+  --bg-grad: linear-gradient(135deg, #170220 0%, #4a0759 32%, #d946ef 62%, #fae8ff 100%);
+  --glow-1: radial-gradient(circle, rgb(217 70 239 / 0.5), transparent 70%);
+  --glow-2: radial-gradient(circle, rgb(56 189 248 / 0.5), transparent 70%);
+  --accent: #e879f9;
+  --accent-rgb: 232 121 249;
+  --accent-hi: #f5d0fe;
+  --accent-lo: #a21caf;
+  --accent-deep: #3b0764;
+  --ink: 23 2 32;
+}
+
+[data-theme='midnight'] {
+  --bg-grad: linear-gradient(135deg, #09090b 0%, #18181b 32%, #334155 62%, #94a3b8 100%);
+  --glow-1: radial-gradient(circle, rgb(148 163 184 / 0.32), transparent 70%);
+  --glow-2: radial-gradient(circle, rgb(71 85 105 / 0.45), transparent 70%);
+  --accent: #a5b4c8;
+  --accent-rgb: 165 180 200;
+  --accent-hi: #e2e8f0;
+  --accent-lo: #475569;
+  --accent-deep: #0f172a;
+  --ink: 9 9 11;
+}

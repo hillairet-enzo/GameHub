@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      # The lock file is created on Windows and may lack the Mac-specific native packages.
+      - name: Let npm resolve the packages for this system
+        if: runner.os != 'Windows'
+        run: rm -f package-lock.json
+      - run: npm install
+      - name: Type-check the interface
+        run: npm run check
+      - name: Build the interface
+        run: npm run build
+      - name: Test the Rust backend
+        run: cargo test --manifest-path src-tauri/Cargo.toml
