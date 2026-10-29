@@ -4,8 +4,6 @@ Un écran d'accueil façon console pour tes émulateurs. Tu ajoutes tes consoles
 
 [Read in English](README.md)
 
-![Écran d'accueil de GameHub](docs/screenshots/home.jpg)
-
 ## Fonctionnalités
 
 - **Un seul accueil pour toutes tes consoles.** Chaque console garde son émulateur, son dossier de jeux et ses options de lancement.
@@ -17,8 +15,6 @@ Un écran d'accueil façon console pour tes émulateurs. Tu ajoutes tes consoles
 - **Un tutoriel au démarrage.** Un court guide illustré s'affiche au premier lancement et se revoit quand tu veux dans **Réglages → Tutoriel**.
 - **Sûr par conception.** L'interface n'envoie jamais le chemin d'un programme au backend : elle demande seulement de lancer « ce jeu de cette console ». L'émulateur et ses arguments viennent toujours de tes réglages enregistrés, et un chemin de jeu ne peut pas sortir du dossier de la console.
 - **Données portables.** Réglages, jaquettes et statistiques tiennent dans un seul dossier, à copier pour les sauvegarder.
-
-![Bibliothèque](docs/screenshots/library.jpg)
 
 ## Installation
 

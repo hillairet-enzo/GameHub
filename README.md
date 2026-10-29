@@ -4,8 +4,6 @@ A console-style home screen for your emulators. Add your consoles once, and Game
 
 [Lire en français](README.fr.md)
 
-![GameHub home screen](docs/screenshots/home.jpg)
-
 ## Features
 
 - **One home screen for every console.** Each console keeps its own emulator, game folder and launch options.
@@ -17,8 +15,6 @@ A console-style home screen for your emulators. Add your consoles once, and Game
 - **A tutorial when you start.** A short illustrated guide appears on first launch and can be replayed any time from **Settings → Tutorial**.
 - **Safe by design.** The interface never sends a program path to the backend: it only asks to start "this game of this console". The emulator and its arguments always come from your saved settings, and game paths cannot leave the console folder.
 - **Portable data.** Settings, covers and stats live in one folder you can copy to back up.
-
-![Library](docs/screenshots/library.jpg)
 
 ## Install
 

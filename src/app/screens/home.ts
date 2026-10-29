@@ -94,9 +94,8 @@ export const homeScreen: ScreenFactory = ({ host }) => {
         'button',
         { class: 'resume', type: 'button', onclick: () => void launchGame(game) },
         h('div', { class: 'resume-cover' }, gameArt(game, assetUrl('Covers', game.cover))),
-        h('div', { class: 'resume-text' }, h('small', null, t('home.resume')), h('strong', null, game.title), h('span', null, `${game.consoleTitle} · ${fmtDuration(stat?.seconds ?? 0)}`)),
-        h('span', { class: 'glyph glyph-pad tone-yellow' }, 'Y'),
-        h('span', { class: 'glyph glyph-kbd' }, 'Y'),
+        h('div', { class: 'resume-text' }, h('small', null, t('home.resume')), h('strong', null, game.title), h('span', null, `${game.consoleTitle} · ${t('home.resumeTime', { time: fmtDuration(stat?.seconds ?? 0) })}`)),
+        h('span', { class: 'resume-go' }, h('span', { class: 'resume-play' }, icon('play', 16)), h('span', { class: 'glyph glyph-pad tone-yellow' }, 'Y'), h('span', { class: 'glyph glyph-kbd' }, 'Y')),
       ),
     );
   };
