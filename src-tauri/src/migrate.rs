@@ -34,7 +34,6 @@ pub fn initial_settings(store: &Store) -> Settings {
     settings.profile.username = os_username();
 
     if let Some(consoles) = read_legacy_consoles(store) {
-        settings.onboarded = !consoles.is_empty();
         for old in consoles {
             let id = slugify(if old.id.is_empty() { &old.title } else { &old.id });
             let preset = presets::find(&id);
@@ -98,11 +97,10 @@ mod tests {
     use crate::store::temp_store;
 
     #[test]
-    fn fresh_install_has_no_consoles_and_is_not_onboarded() {
+    fn fresh_install_has_no_consoles() {
         let store = temp_store("fresh");
         let s = store.load_settings().unwrap();
         assert!(s.consoles.is_empty());
-        assert!(!s.onboarded);
         assert!(!s.profile.username.is_empty());
     }
 
@@ -121,7 +119,6 @@ mod tests {
         fs::write(store.covers_dir().join("profile_banner__COVER__200.jpg"), b"b").unwrap();
 
         let s = store.load_settings().unwrap();
-        assert!(s.onboarded);
         assert_eq!(s.consoles.len(), 3);
         assert_eq!(s.consoles[0].args, "-batch -fullscreen -- {rom}");
         assert_eq!(s.consoles[1].args, "-b -e {rom}");

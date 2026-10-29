@@ -12,7 +12,6 @@ pub const LANGUAGES: [&str; 3] = ["auto", "fr", "en"];
 #[serde(rename_all = "camelCase", default)]
 pub struct Settings {
     pub version: u32,
-    pub onboarded: bool,
     /// True once the first-launch tutorial has been shown.
     pub tutorial_seen: bool,
     pub profile: Profile,
@@ -24,7 +23,6 @@ impl Default for Settings {
     fn default() -> Self {
         Settings {
             version: SETTINGS_VERSION,
-            onboarded: false,
             tutorial_seen: false,
             profile: Profile::default(),
             ui: UiPrefs::default(),

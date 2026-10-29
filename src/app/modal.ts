@@ -6,7 +6,7 @@
 import { pushInput, type Action } from './input.js';
 import { sfx } from './audio.js';
 import { t } from './i18n.js';
-import { h, type Child } from './ui.js';
+import { h } from './ui.js';
 
 export interface ModalButton {
   label: string;
@@ -207,16 +207,3 @@ export function promptDialog(opts: { title: string; label: string; value?: strin
     }, 60);
   });
 }
-
-export function infoDialog(title: string, message: string, extra?: Child): Promise<void> {
-  return new Promise((resolve) => {
-    openModal({
-      title,
-      message,
-      body: extra ? h('div', { class: 'modal-extra' }, extra) : undefined,
-      buttons: [{ label: t('common.ok'), kind: 'primary', onClick: () => resolve() }],
-      onBack: () => resolve(),
-    });
-  });
-}
-

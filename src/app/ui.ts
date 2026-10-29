@@ -94,9 +94,10 @@ export function fmtAgo(unixSeconds: number): string {
 
 export function fmtSize(bytes: number): string {
   if (!bytes) return '';
+  const fr = lang() === 'fr';
   const gb = bytes / 1024 ** 3;
-  if (gb >= 1) return `${gb.toFixed(1)} GB`;
-  return `${Math.max(1, Math.round(bytes / 1024 ** 2))} MB`;
+  if (gb >= 1) return `${gb.toLocaleString(fr ? 'fr-FR' : 'en-US', { maximumFractionDigits: 1, minimumFractionDigits: 1 })} ${fr ? 'Go' : 'GB'}`;
+  return `${Math.max(1, Math.round(bytes / 1024 ** 2))} ${fr ? 'Mo' : 'MB'}`;
 }
 
 export function wait(ms: number): Promise<void> {

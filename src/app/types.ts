@@ -35,7 +35,6 @@ export interface Console {
 
 export interface Settings {
   version: number;
-  onboarded: boolean;
   /** True once the first-launch tutorial has been shown. */
   tutorialSeen: boolean;
   profile: Profile;

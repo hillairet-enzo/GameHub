@@ -73,7 +73,6 @@
 .modal-wide { width: min(680px, 100%); }
 .modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 8px; }
 .modal-message { color: var(--text-dim); margin-bottom: 4px; }
-.modal-extra { margin-top: 12px; }
 .modal-actions { position: sticky; bottom: -24px; z-index: 2; display: flex; justify-content: flex-end; gap: 12px; margin: 24px -30px -24px; padding: 16px 30px 24px; background: linear-gradient(to top, rgb(var(--ink) / 0.98) 70%, transparent); }
 
 .wizard { display: grid; gap: 16px; margin-top: 14px; }

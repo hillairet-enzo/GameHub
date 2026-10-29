@@ -169,7 +169,6 @@ export function addConsoleWizard(): Promise<boolean> {
                   extensions: preset ? [...preset.extensions] : [],
                   image: null,
                 });
-                s.onboarded = true;
               });
               await refreshLibrary();
               saved = true;

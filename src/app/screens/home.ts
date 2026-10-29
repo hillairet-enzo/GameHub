@@ -1,4 +1,4 @@
-import { api, isTauri } from '../api.js';
+import { api, assetUrl, isTauri } from '../api.js';
 import { gameArt } from '../art.js';
 import { sfx } from '../audio.js';
 import { consoleEmblem } from '../emblem.js';
@@ -7,7 +7,6 @@ import { pushInput } from '../input.js';
 import { launchGame } from '../launcher.js';
 import { confirmDialog } from '../modal.js';
 import { go, setMood, type ScreenFactory } from '../router.js';
-import { assetUrl } from '../api.js';
 import { consoleTotals, lastPlayedGame, on, store } from '../state.js';
 import type { Console } from '../types.js';
 import { fmtDuration, h, icon } from '../ui.js';

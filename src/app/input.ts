@@ -7,7 +7,6 @@ export type Handler = (action: Action, event?: KeyboardEvent) => boolean | void;
 export type Device = 'kbd' | 'pad';
 
 const stack: Handler[] = [];
-const deviceListeners = new Set<(device: Device) => void>();
 const padListeners = new Set<() => void>();
 
 export const pad = { connected: false, name: '' };
@@ -21,10 +20,6 @@ export function pushInput(handler: Handler): () => void {
   };
 }
 
-export function onDeviceChange(listener: (device: Device) => void): void {
-  deviceListeners.add(listener);
-}
-
 export function onPadChange(listener: () => void): void {
   padListeners.add(listener);
 }
@@ -33,7 +28,6 @@ function setDevice(next: Device): void {
   if (device === next) return;
   device = next;
   document.body.dataset.input = next;
-  deviceListeners.forEach((fn) => fn(next));
 }
 
 function dispatch(action: Action, event?: KeyboardEvent): boolean {

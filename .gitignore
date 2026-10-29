@@ -15,8 +15,3 @@ GameHub_Data/
 *.log
 .DS_Store
 Thumbs.db
-
-# leftovers from the previous layout
-whole-wasp/
-_a-supprimer/
-_backup_avant_refonte/

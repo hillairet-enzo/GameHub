@@ -279,6 +279,7 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
         }),
       );
       themeName.textContent = t(`theme.${ui().theme}`);
+      picker.value = customColour();
     };
     const chooseTheme = async (theme: ThemeId) => {
       await updateSettings((s) => (s.ui.theme = theme));
@@ -339,7 +340,6 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
     const paintPad = () => (padLine.textContent = pad.connected ? t('settings.padConnected', { name: pad.name }) : t('settings.padNone'));
     paintPad();
 
-    const keyRow = (action: string, kbd: string, gp: string) => h('tr', null, h('td', null, action), h('td', null, h('kbd', null, kbd)), h('td', null, h('kbd', { class: 'pad' }, gp)));
     const items: Item[] = [
       toggleItem(t('settings.sound'), t('settings.soundHint'), () => ui().sound, async (v) => {
         await updateSettings((s) => (s.ui.sound = v));
@@ -353,8 +353,6 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
       head(t('settings.audio.title'), t('settings.audio.desc')),
       items.map((i) => i.el),
       h('div', { class: 'setting-row static' }, h('div', { class: 'row-label' }, t('settings.gamepad')), padLine),
-      h('table', { class: 'controls-table' }, h('thead', null, h('tr', null, h('th', null, t('settings.ctrl.action')), h('th', null, t('settings.ctrl.keyboard')), h('th', null, t('settings.ctrl.gamepad')))),
-        h('tbody', null, keyRow(t('settings.ctrl.move'), '← → ↑ ↓ / WASD', t('settings.ctrl.dpad')), keyRow(t('settings.ctrl.confirm'), 'Enter', 'A'), keyRow(t('settings.ctrl.back'), 'Esc', 'B'), keyRow(t('settings.ctrl.x'), 'X', 'X'), keyRow(t('settings.ctrl.y'), 'Y', 'Y'), keyRow(t('settings.ctrl.console'), 'Q / E', 'LB / RB'), keyRow(t('settings.ctrl.menu'), 'M', 'Start'), keyRow(t('settings.ctrl.fullscreen'), 'F11', '—'))),
     );
     return { el, items };
   }
@@ -387,20 +385,15 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
   }
 
   function helpPanel(): PanelView {
-    const keys = (label: string, value: string) => row(label, h('span', { class: 'mono' }, value), 'static');
+    const keyRow = (action: string, kbd: string, gp: string) => h('tr', null, h('td', null, action), h('td', null, h('kbd', null, kbd)), h('td', null, h('kbd', { class: 'pad' }, gp)));
     const replay: Item = { el: row(t('settings.help.replay'), icon('play', 18)), run: () => void openTutorial() };
     const el = h(
       'div',
       { class: 'panel' },
       head(t('settings.help.title'), t('settings.help.desc')),
       replay.el,
-      keys(t('help.move'), t('help.move.keys')),
-      keys(t('help.confirm'), t('help.confirm.keys')),
-      keys(t('help.back'), t('help.back.keys')),
-      keys(t('help.sort'), 'Y'),
-      keys(t('help.cover'), 'X'),
-      keys(t('help.console'), t('help.console.keys')),
-      keys(t('help.fullscreen'), 'F11'),
+      h('table', { class: 'controls-table' }, h('thead', null, h('tr', null, h('th', null, t('settings.ctrl.action')), h('th', null, t('settings.ctrl.keyboard')), h('th', null, t('settings.ctrl.gamepad')))),
+        h('tbody', null, keyRow(t('settings.ctrl.move'), '← → ↑ ↓ / WASD', t('settings.ctrl.dpad')), keyRow(t('settings.ctrl.confirm'), 'Enter', 'A'), keyRow(t('settings.ctrl.back'), 'Esc', 'B'), keyRow(t('settings.ctrl.x'), 'X', 'X'), keyRow(t('settings.ctrl.y'), 'Y', 'Y'), keyRow(t('settings.ctrl.console'), 'Q / E', 'LB / RB'), keyRow(t('settings.ctrl.menu'), 'M', 'Start'), keyRow(t('settings.ctrl.fullscreen'), 'F11', '—'))),
     );
     return { el, items: [replay] };
   }
@@ -469,6 +462,13 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
     setFocus(focus);
   }
 
+  /** Text below the last control (like the controls table) stays reachable without a mouse. */
+  function scrollContent(direction: 1 | -1) {
+    const room = direction > 0 ? content.scrollHeight - content.clientHeight - content.scrollTop : content.scrollTop;
+    if (room <= 1) return;
+    content.scrollBy({ top: direction * 160, behavior: document.documentElement.dataset.motion === 'reduced' ? 'auto' : 'smooth' });
+  }
+
   // ---------- input ----------
 
   const release = pushInput((action) => {
@@ -490,7 +490,7 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
         if (focus - cols >= 0) {
           sfx('move');
           setFocus(focus - cols);
-        }
+        } else scrollContent(-1);
         return true;
       case 'down':
         if (focus + cols < view.items.length) {
@@ -499,7 +499,7 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
         } else if (view.grid && focus < view.items.length - 1 && Math.floor(focus / cols) < Math.floor((view.items.length - 1) / cols)) {
           sfx('move');
           setFocus(view.items.length - 1);
-        }
+        } else scrollContent(1);
         return true;
       case 'left':
         if (item?.left?.()) return true;

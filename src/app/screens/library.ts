@@ -197,7 +197,6 @@ export const libraryScreen: ScreenFactory = ({ host, params }) => {
     }
     const at = keepKey ? list.findIndex((g) => g.key === keepKey) : -1;
     index = at >= 0 ? at : 0;
-    heading.textContent = `${(cfg ? cfg.title : t('lib.all')).toUpperCase()}`;
     renderSort();
     update();
   };
@@ -312,11 +311,11 @@ export const libraryScreen: ScreenFactory = ({ host, params }) => {
         { pad: 'B', kbd: 'Esc', label: t('hint.back'), tone: 'red' as const },
       ]
     : [
-    { pad: '◂▸', kbd: '← →', label: t('hint.browse') },
-    { pad: 'A', kbd: 'Enter', label: t('hint.play'), tone: 'green' as const },
-    { pad: 'B', kbd: 'Esc', label: t('hint.back'), tone: 'red' as const },
-    { pad: 'X', kbd: 'X', label: t('hint.cover'), tone: 'blue' as const },
-    ...(store.settings.consoles.length > 1 ? [{ pad: 'LB/RB', kbd: 'Q/E', label: t('hint.console') }] : []),
+        { pad: '◂▸', kbd: '← →', label: t('hint.browse') },
+        { pad: 'A', kbd: 'Enter', label: t('hint.play'), tone: 'green' as const },
+        { pad: 'B', kbd: 'Esc', label: t('hint.back'), tone: 'red' as const },
+        { pad: 'X', kbd: 'X', label: t('hint.cover'), tone: 'blue' as const },
+        ...(store.settings.consoles.length > 1 ? [{ pad: 'LB/RB', kbd: 'Q/E', label: t('hint.console') }] : []),
       ];
 
   return {

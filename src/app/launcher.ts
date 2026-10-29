@@ -13,8 +13,6 @@ import { gameArt } from './art.js';
 
 let busy = false;
 
-export const isLaunching = (): boolean => busy;
-
 export async function launchGame(game: Game): Promise<void> {
   if (busy) return;
   busy = true;

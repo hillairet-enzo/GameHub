@@ -60,7 +60,6 @@ function seed(): DemoState {
     : [seedConsole('ps2', 'PlayStation 2', null), seedConsole('psp', 'PSP', null), seedConsole('wii', 'Wii', null)];
   const settings: Settings = {
     version: 2,
-    onboarded: !empty,
     tutorialSeen: !empty,
     profile: { username: 'Alex', avatar: 'mock:200:1', banner: 'mock:210:1' },
     ui: { language: params.get('lang') === 'en' ? 'en' : params.get('lang') === 'fr' ? 'fr' : 'auto', theme: (params.get('theme') as Settings['ui']['theme']) || 'ocean', clock24: true, sound: false, volume: 0.6, scanlines: true, reduceMotion: false, fullscreen: false, accent: /^#[0-9a-f]{6}$/i.test(params.get('accent') ?? '') ? params.get('accent')! : '' },
@@ -149,7 +148,7 @@ export async function mockInvoke(cmd: string, args: Record<string, unknown> = {}
   await delay(30);
   switch (cmd) {
     case 'get_app_info':
-      return { version: '0.2.0-demo', dataDir: 'C:\\Users\\you\\AppData\\Local\\com.gamehub.app\\GameHub_Data', os: 'demo' };
+      return { version: '0.2.1-demo', dataDir: 'C:\\Users\\you\\AppData\\Local\\com.gamehub.app\\GameHub_Data', os: 'demo' };
     case 'get_settings':
       return state.settings;
     case 'save_settings': {
