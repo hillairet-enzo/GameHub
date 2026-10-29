@@ -13,7 +13,8 @@ A console-style home screen for your emulators. Add your consoles once, and Game
 - **Your library builds itself.** GameHub scans your game folders, cleans up titles, hides the `.bin` files that belong to a `.cue` sheet and keeps multi-disc games apart.
 - **Made for a gamepad and a keyboard.** Navigate everything with a controller, the keyboard or the mouse. The hints at the bottom switch to the device you use.
 - **Covers, profile, stats.** Add your own cover art, a profile picture and banner, and see how long you play.
-- **Four themes, two languages.** Ocean, Matrix, Cyberpunk and Midnight. English and French, picked from your system by default.
+- **Ten themes, your own color, two languages.** Ocean, Matrix, Cyberpunk, Midnight, Sunset, Rose, Violet, Lagoon, Gold, or pick any color you like. English and French, picked from your system by default.
+- **A tutorial when you start.** A short illustrated guide appears on first launch and can be replayed any time from **Settings → Tutorial**.
 - **Safe by design.** The interface never sends a program path to the backend: it only asks to start "this game of this console". The emulator and its arguments always come from your saved settings, and game paths cannot leave the console folder.
 - **Portable data.** Settings, covers and stats live in one folder you can copy to back up.
 
@@ -23,13 +24,34 @@ A console-style home screen for your emulators. Add your consoles once, and Game
 
 ### From a release
 
-Download the installer for your system from the [Releases](../../releases) page and run it.
+Download the installer for your system from the [Releases](../../releases) page:
+
+| System | File to download |
+| --- | --- |
+| Windows | the `.exe` (or `.msi`) installer |
+| macOS 12 or newer | the `.dmg` file (works on Apple Silicon and Intel Macs) |
 
 GameHub does not include any game, BIOS or emulator. Install the emulators you want to use first, then add them in GameHub.
 
+#### Installing on a Mac
+
+1. Download the `.dmg` file from [Releases](../../releases) and open it.
+2. Drag **GameHub** onto the **Applications** folder.
+3. The app is not signed by Apple, so macOS blocks it the first time. **Right-click** GameHub in Applications, choose **Open**, then confirm **Open** in the dialog. You only have to do this once.
+4. If macOS says the app is *damaged* or cannot be opened, open **Terminal** and run the line below, then try again:
+   ```bash
+   xattr -cr /Applications/GameHub.app
+   ```
+5. Install an emulator for Mac (for example Dolphin, PCSX2, PPSSPP, mGBA or melonDS). In GameHub, when asked for the emulator, pick its `.app` file, usually in **Applications**.
+
+Good to know on macOS:
+- Full screen: use the green button of the window or <kbd>Ctrl</kbd> + <kbd>Cmd</kbd> + <kbd>F</kbd> (<kbd>F11</kbd> is reserved by the system).
+- Your data is in `~/Library/Application Support/com.gamehub.app/GameHub_Data`.
+- The Mac version is new and has had little testing. If something does not work, please open an issue and describe what you see.
+
 ### From source
 
-You need [Node.js 22.12 or newer](https://nodejs.org), [Rust](https://rustup.rs) and the [Tauri prerequisites](https://tauri.app/start/prerequisites/) for your system. Windows is the main target.
+You need [Node.js 22.12 or newer](https://nodejs.org), [Rust](https://rustup.rs) and the [Tauri prerequisites](https://tauri.app/start/prerequisites/) for your system (on a Mac: the Xcode command line tools, installed with `xcode-select --install`). Windows is the main target and macOS is supported.
 
 ```bash
 npm install
@@ -42,9 +64,10 @@ npm run tauri build    # build an installer
 ## First steps
 
 1. Open GameHub and choose **Add a console**.
-2. Pick a template (or **Custom**), then choose the emulator program and the folder that holds your games.
-3. Press **Add console**. Your games appear in the library.
-4. Select a game and press <kbd>Enter</kbd> (or **A** on a controller).
+2. Tap your console in the grid (or **Other** to name your own).
+3. Choose the emulator program and the folder that holds your games. Both are optional and can be set later in **Settings → Consoles**, where you can also change the launch options, file types and picture.
+4. Press **Add**. Your games appear in the library.
+5. Select a game and press <kbd>Enter</kbd> (or **A** on a controller). GameHub shows a launch screen for a few seconds, then steps aside for the emulator and comes back when you quit it.
 
 ### Launch options
 
@@ -67,11 +90,11 @@ If `{rom}` is missing, the game path is added at the end. Quotes keep arguments 
 | Sort / resume last game | Y | Y |
 | Previous / next console | Q / E | LB / RB |
 | Settings | M | Start |
-| Full screen | F11 or Alt+Enter | |
+| Full screen | F11 or Alt+Enter (macOS: Ctrl+Cmd+F) | |
 
 ## Your data
 
-Everything GameHub saves is in the `GameHub_Data` folder inside the application data folder of your system. On Windows that is `%LOCALAPPDATA%\com.gamehub.app\GameHub_Data`. **Settings → About → Data folder** opens it.
+Everything GameHub saves is in the `GameHub_Data` folder inside the application data folder of your system. On Windows that is `%LOCALAPPDATA%\com.gamehub.app\GameHub_Data`, on macOS `~/Library/Application Support/com.gamehub.app/GameHub_Data`. **Settings → About → Data folder** opens it.
 
 | File or folder | Content |
 | --- | --- |
@@ -102,7 +125,7 @@ Run the Rust tests with `cargo test --manifest-path src-tauri/Cargo.toml`.
 
 ## Sounds
 
-The three menu sounds in `public/sounds` are placeholders. Before you redistribute GameHub, make sure you have the right to share them, or replace them with your own files (same names: `move.mp3`, `select.mp3`, `back.mp3`).
+The three menu sounds in `public/sounds` are royalty-free sounds. You can replace them with your own files (same names: `move.mp3`, `select.mp3`, `back.mp3`).
 
 ## License
 
