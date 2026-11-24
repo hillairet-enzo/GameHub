@@ -4,8 +4,10 @@ import { sfx } from '../audio.js';
 import { errorMessage, t } from '../i18n.js';
 import { pushInput } from '../input.js';
 import { launchGame } from '../launcher.js';
+import { coverflowStyle, SHAPES, shapeOf } from '../shapes.js';
+import { askCoverSource, fetchCoverFor, hasCoverKey } from '../onlineCovers.js';
 import { go, type ScreenFactory } from '../router.js';
-import { consoleById, gamesOf, lastPlayedGame, on, refreshLibrary, statOf, store } from '../state.js';
+import { consoleById, gamesOf, isConfigured, lastPlayedGame, on, refreshLibrary, statOf, store } from '../state.js';
 import type { Game } from '../types.js';
 import { fmtAgo, fmtDuration, fmtSize, h, icon, toast } from '../ui.js';
 
@@ -120,7 +122,7 @@ export const libraryScreen: ScreenFactory = ({ host, params }) => {
     const isLast = sort === 'smart' && i === 0 && lastPlayedGame(consoleId)?.key === game.key;
     const el = h(
       'article',
-      { class: 'cover', onclick: () => (offsetOf(i) === 0 ? play() : move(offsetOf(i))) },
+      { class: 'cover', style: coverflowStyle(SHAPES[shapeOf(consoleById(game.consoleId))]), onclick: () => (offsetOf(i) === 0 ? play() : move(offsetOf(i))) },
       h('div', { class: 'cover-shadow' }),
       h('div', { class: 'cover-image' }, gameArt(game, assetUrl('Covers', game.cover)), h('div', { class: 'image-dark' })),
       h('div', { class: 'cover-info' }, h('div', { class: `cover-number ${isLast ? 'last-played-badge' : ''}` }, isLast ? t('lib.lastGame') : String(i + 1).padStart(2, '0')), h('div', { class: 'cover-title' }, game.title)),
@@ -175,7 +177,7 @@ export const libraryScreen: ScreenFactory = ({ host, params }) => {
   // ---------- (re)build ----------
 
   const build = (keepKey?: string) => {
-    const configured = cfg ? Boolean(cfg.emulatorPath && cfg.romPath) : true;
+    const configured = cfg ? isConfigured(cfg) : true;
     hideState();
     for (const el of els.values()) el.remove();
     els.clear();
@@ -233,6 +235,14 @@ export const libraryScreen: ScreenFactory = ({ host, params }) => {
     const game = list[index];
     if (!game) return;
     sfx('select');
+    if (hasCoverKey()) {
+      const source = await askCoverSource();
+      if (!source) return;
+      if (source === 'online') {
+        await fetchCoverFor(game);
+        return;
+      }
+    }
     const path = await pickImage(t('lib.pickCover'));
     if (!path) return;
     try {

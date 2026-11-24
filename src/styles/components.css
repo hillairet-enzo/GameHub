@@ -132,6 +132,9 @@
 
 .hero { display: flex; align-items: center; gap: 20px; padding: 4px 0 6px; }
 .hero-text { min-width: 0; flex: 1; display: grid; gap: 4px; }
+.hero-art { flex: none; }
+.wizard-detect { margin: 0; font-size: 14px; color: var(--text-faint); min-height: 1.4em; }
+.wizard-detect.is-found { color: var(--text-dim); }
 .hero-title { margin: 0; font-family: var(--font-display); font-size: 26px; font-weight: 600; letter-spacing: 0.04em; line-height: 1.15; }
 .hero-sub { margin: 0; color: var(--text-dim); font-size: 14px; }
 .name-input { min-height: 52px; font-family: var(--font-display); font-size: 20px; letter-spacing: 0.04em; }
@@ -185,3 +188,11 @@
 .tour-keys { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .tour-key { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px; border-radius: 999px; font-size: 13px; background: rgb(255 255 255 / 0.08); border: 1px solid var(--stroke); }
 .tour-key b { padding: 2px 8px; border-radius: 999px; font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; background: rgb(255 255 255 / 0.16); }
+
+.tour-input { pointer-events: none; }
+
+/* SteamGridDB key dialog */
+.key-dialog { display: grid; gap: 12px; }
+.key-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; color: var(--text-dim, inherit); line-height: 1.45; }
+.key-steps li::marker { color: var(--accent-hi, currentColor); font-weight: 700; }
+.key-dialog .btn { display: inline-flex; align-items: center; gap: 8px; }

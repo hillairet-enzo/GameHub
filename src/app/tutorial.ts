@@ -7,7 +7,7 @@ import { t } from './i18n.js';
 import { openModal } from './modal.js';
 import { h, icon } from './ui.js';
 
-const STEPS = 5;
+const STEPS = 6;
 
 const orb = (id: string, title: string, size = 'emblem-hero') => consoleEmblem({ id, preset: id, title, image: null }, size);
 
@@ -39,8 +39,9 @@ const arts: Array<() => HTMLElement> = [
       h('span', { class: 'tour-arrow' }, icon('play', 22)),
       h(
         'div',
-        { class: 'tour-grid' },
-        ['ps1', 'ps2', 'gamecube', 'wii', 'n64', 'snes'].map((id) => h('div', { class: `tile ${id === 'ps2' ? 'is-hot' : ''}` }, orb(id, id, 'emblem-tile'))),
+        { class: 'tour-stack' },
+        h('div', { class: 'field-input tour-input' }, 'Nintendo Switch'),
+        h('p', { class: 'tour-note' }, t('wizard.detected', { console: 'Nintendo Switch', types: '.nsp .xci .nsz .xcz' })),
       ),
     ),
 
@@ -60,7 +61,17 @@ const arts: Array<() => HTMLElement> = [
       ),
     ),
 
-  // 5. play
+  // 5. covers from SteamGridDB
+  () =>
+    h(
+      'div',
+      { class: 'tour-stack' },
+      fakeRow('image', t('settings.sgdbKey'), '••••••••••••a1b2', true),
+      fakeRow('refresh', t('settings.fetchCovers'), t('cover.tourRow'), false),
+      h('p', { class: 'tour-note' }, t('cover.tourNote')),
+    ),
+
+  // 6. play
   () =>
     h(
       'div',

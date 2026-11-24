@@ -126,3 +126,15 @@ Les trois sons des menus dans `public/sounds` sont des sons libres de droits. Tu
 ## Licence
 
 [MIT](LICENSE). GameHub n'est affilié à aucun fabricant de console ni à aucun projet d'émulateur. Les noms de consoles et d'émulateurs appartiennent à leurs propriétaires et servent uniquement à décrire la compatibilité.
+
+## Mises à jour automatiques (pour les mainteneurs)
+
+GameHub cherche une nouvelle version sur GitHub au démarrage et l'installe sur demande. Le dossier de données n'est jamais touché : les joueurs gardent leurs consoles, jaquettes et réglages.
+
+Mise en place (une seule fois) :
+
+1. Génère une paire de clés de signature : `npm run tauri signer generate -- -w "$env:USERPROFILE\.tauri\gamehub.key"` (PowerShell ; dans `cmd`, écris `%USERPROFILE%` à la place de `$env:USERPROFILE`) (choisis un mot de passe). Garde le fichier `.key` privé et sauvegardé : sans lui, les copies déjà installées ne pourront plus se mettre à jour.
+2. Colle la clé **publique** (contenu du fichier `.key.pub`) dans `plugins.updater.pubkey` de `src-tauri/tauri.conf.json`.
+3. Dans le dépôt GitHub, ajoute deux secrets (Settings → Secrets and variables → Actions) : `TAURI_SIGNING_PRIVATE_KEY` (contenu du fichier `.key`) et `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
+
+Pour publier une version : augmente `version` dans `package.json`, `src-tauri/Cargo.toml` et `src-tauri/tauri.conf.json`, pousse un tag comme `v0.3.0`, puis **publie** la release en brouillon. Ne change jamais l'`identifier` (`com.gamehub.app`).

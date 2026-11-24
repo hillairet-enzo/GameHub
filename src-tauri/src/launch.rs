@@ -101,7 +101,40 @@ pub fn resolve_executable(path: &Path) -> Option<PathBuf> {
     }
 }
 
+/// Programs that can be started by themselves (PC games). Shortcuts and scripts go through the shell.
+const PROGRAM_EXTS: [&str; 4] = ["exe", "lnk", "bat", "cmd"];
+
+/// Arguments for a program started by itself: the template without the game path.
+pub fn build_direct_args(template: &str) -> Vec<String> {
+    tokenize(template).into_iter().filter(|t| !t.contains("{rom}")).collect()
+}
+
+/// A game that is itself a program (`.exe`, shortcut or script): started directly.
+fn prepare_program(console: &Console, rel_path: &str) -> Result<Prepared, String> {
+    if console.rom_path.is_empty() {
+        return Err("rom_folder_missing|".into());
+    }
+    let rom = resolve_rom(Path::new(&console.rom_path), rel_path)?;
+    let ext = rom.extension().map(|e| e.to_string_lossy().to_lowercase()).unwrap_or_default();
+    if !PROGRAM_EXTS.contains(&ext.as_str()) {
+        return Err(format!("emulator_missing|{}", console.emulator_path));
+    }
+    let working_dir = rom.parent().map(|p| p.to_path_buf()).unwrap_or_else(|| PathBuf::from("."));
+    let extra = build_direct_args(&console.args);
+    if ext == "exe" {
+        return Ok(Prepared { emulator: rom, args: extra, working_dir });
+    }
+    // Shortcuts and scripts: let Windows open them, and wait until the game is closed.
+    let mut args = vec!["/C".to_string(), "start".into(), "/wait".into(), String::new(), rom.to_string_lossy().to_string()];
+    args.extend(extra);
+    Ok(Prepared { emulator: PathBuf::from("cmd"), args, working_dir })
+}
+
 pub fn prepare(console: &Console, rel_path: &str) -> Result<Prepared, String> {
+    // No emulator chosen: the games must be programs (a PC console).
+    if console.emulator_path.trim().is_empty() {
+        return prepare_program(console, rel_path);
+    }
     let emulator = match resolve_executable(Path::new(&console.emulator_path)) {
         Some(program) if !console.emulator_path.is_empty() => program,
         _ => return Err(format!("emulator_missing|{}", console.emulator_path)),
@@ -167,6 +200,33 @@ mod tests {
         assert_eq!(tokenize("  a   'b c' "), vec!["a", "b c"]);
         assert_eq!(tokenize(r#"x "" y"#), vec!["x", "", "y"]);
         assert!(tokenize("   ").is_empty());
+    }
+
+    #[test]
+    fn pc_games_start_by_themselves() {
+        let store = temp_store("program");
+        let games = store.root.join("games");
+        fs::create_dir_all(games.join("Hades")).unwrap();
+        fs::write(games.join("Hades").join("Hades.exe"), b"x").unwrap();
+        fs::write(games.join("Hades").join("Hades.lnk"), b"x").unwrap();
+        fs::write(games.join("disc.iso"), b"x").unwrap();
+        let pc = Console { id: "pc".into(), rom_path: games.to_string_lossy().to_string(), args: "{rom} -windowed".into(), ..Default::default() };
+
+        let exe = prepare(&pc, "Hades/Hades.exe").unwrap();
+        assert_eq!(exe.emulator, games.join("Hades").join("Hades.exe"));
+        assert_eq!(exe.args, vec!["-windowed"]);
+        assert_eq!(exe.working_dir, games.join("Hades"));
+
+        let link = prepare(&pc, "Hades/Hades.lnk").unwrap();
+        assert_eq!(link.emulator, PathBuf::from("cmd"));
+        assert_eq!(&link.args[..4], &["/C", "start", "/wait", ""]);
+        assert!(link.args[4].ends_with("Hades.lnk"));
+
+        // Something that is not a program needs an emulator, and the path rules still apply.
+        assert!(prepare(&pc, "disc.iso").unwrap_err().starts_with("emulator_missing"));
+        assert!(prepare(&pc, "../x.exe").unwrap_err().starts_with("rom_outside"));
+        assert!(prepare(&pc, "nope.exe").unwrap_err().starts_with("rom_missing"));
+        assert!(build_direct_args("{rom}").is_empty());
     }
 
     #[test]

@@ -33,11 +33,11 @@ export function buildShell(root: HTMLElement, onProfile: () => void): Shell {
   const nxe = h(
     'div',
     { class: 'nxe', id: 'nxe', 'data-mood': 'default' },
-    h('div', { class: 'background', 'aria-hidden': 'true' }, mood, h('div', { class: 'blue-glow' }), h('div', { class: 'white-glow' }), buildBubbles(), h('div', { class: 'background-gradient' }), h('div', { class: 'vignette' })),
+    h('div', { class: 'background', 'aria-hidden': 'true' }, h('div', { class: 'wallpaper' }), mood, h('div', { class: 'blue-glow' }), h('div', { class: 'white-glow' }), buildBubbles(), h('div', { class: 'background-gradient' }), h('div', { class: 'vignette' })),
     h(
       'header',
       { class: 'topbar' },
-      h('div', { class: 'logo' }, h('div', { class: 'logo-orb' }, 'G'), h('div', { class: 'logo-text' }, 'GAMEHUB')),
+      h('div', { class: 'logo' }, h('img', { class: 'logo-img', src: '/logo.svg', alt: '', width: 40, height: 40, draggable: false }), h('div', { class: 'logo-text' }, 'GAMEHUB')),
       h(
         'div',
         { class: 'topbar-right' },
@@ -129,7 +129,7 @@ export async function runBoot(root: HTMLElement): Promise<void> {
   if (document.documentElement.dataset.motion === 'reduced') return;
 
   const lines = ['boot.line1', 'boot.line2', 'boot.line3'].map((key, i) => h('div', { class: 'boot-line', style: `animation-delay:${0.55 + i * 0.28}s` }, t(key)));
-  const overlay = h('div', { class: 'boot', role: 'presentation' }, h('div', { class: 'boot-content' }, h('div', { class: 'boot-orb' }, 'G'), h('div', { class: 'boot-title' }, 'GAMEHUB OS'), h('div', { class: 'boot-log' }, lines)));
+  const overlay = h('div', { class: 'boot', role: 'presentation' }, h('div', { class: 'boot-content' }, h('img', { class: 'boot-logo', src: '/logo.svg', alt: '', width: 96, height: 96, draggable: false }), h('div', { class: 'boot-title' }, 'GAMEHUB OS'), h('div', { class: 'boot-log' }, lines)));
   root.appendChild(overlay);
 
   let skip: () => void = () => undefined;

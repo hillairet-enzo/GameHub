@@ -2,7 +2,7 @@
 // in a plain browser (npm run dev) they go to a small in-memory demo backend.
 
 import { isMockName, mockArt } from './mockart.js';
-import type { AppInfo, LaunchOutcome, LegacyImport, Preset, ScanResult, Settings, Stats } from './types.js';
+import type { AppInfo, LaunchOutcome, LegacyImport, Preset, ScanResult, Settings, Stats, UpdateInfo } from './types.js';
 
 export const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
@@ -62,16 +62,21 @@ export const api = {
   getStats: () => call<Stats>('get_stats'),
   importLegacy: (legacy: LegacyImport) => call<void>('import_legacy', { legacy }),
   presets: () => call<Preset[]>('list_presets'),
+  fetchGameCover: (consoleId: string, relPath: string, title: string) => call<string>('fetch_game_cover', { consoleId, relPath, title }),
+  matchConsole: (name: string) => call<Preset>('match_console', { name }),
   guessArgs: (emulatorPath: string) => call<string | null>('guess_args', { emulatorPath }),
   scan: () => call<ScanResult>('scan_library'),
   setGameCover: (consoleId: string, relPath: string, sourcePath: string) =>
     call<string>('set_game_cover', { consoleId, relPath, sourcePath }),
   clearGameCover: (consoleId: string, relPath: string) => call<void>('clear_game_cover', { consoleId, relPath }),
-  setImage: (kind: 'avatar' | 'banner' | 'console', owner: string, sourcePath: string) =>
+  setImage: (kind: 'avatar' | 'banner' | 'console' | 'wallpaper', owner: string, sourcePath: string) =>
     call<string>('set_image', { kind, owner, sourcePath }),
   launch: (consoleId: string, relPath: string) => call<LaunchOutcome>('launch_game', { consoleId, relPath }),
   setFullscreen: (enabled: boolean) => call<void>('set_fullscreen', { enabled }),
   isFullscreen: () => call<boolean>('is_fullscreen'),
+  checkUpdate: () => call<UpdateInfo | null>('check_update'),
+  installUpdate: () => call<void>('install_update'),
+  openUrl: (url: string) => call<void>('open_url', { url }),
   openDataDir: () => call<void>('open_data_dir'),
   quit: () => call<void>('quit_app'),
 };

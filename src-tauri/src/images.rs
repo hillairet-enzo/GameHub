@@ -24,9 +24,9 @@ fn validated_extension(source: &Path) -> Result<String, String> {
     Ok(ext)
 }
 
-/// `kind` is `avatar`, `banner` or `console`. Returns the new file name inside `Images`.
+/// `kind` is `avatar`, `banner`, `console` or `wallpaper`. Returns the new file name inside `Images`.
 pub fn import_image(store: &Store, kind: &str, owner: &str, source: &str) -> Result<String, String> {
-    if !["avatar", "banner", "console"].contains(&kind) {
+    if !["avatar", "banner", "console", "wallpaper"].contains(&kind) {
         return Err(format!("image_kind|{}", kind));
     }
     let ext = validated_extension(Path::new(source))?;
@@ -34,6 +34,17 @@ pub fn import_image(store: &Store, kind: &str, owner: &str, source: &str) -> Res
     let tag: String = owner.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-').take(32).collect();
     let name = if tag.is_empty() { format!("{}-{}.{}", kind, now_ms(), ext) } else { format!("{}-{}-{}.{}", kind, tag, now_ms(), ext) };
     fs::copy(source, store.images_dir().join(&name)).map_err(|e| format!("copy|{}", e))?;
+    // There is only one wallpaper at a time: the previous picture is no longer needed.
+    if kind == "wallpaper" {
+        if let Ok(entries) = fs::read_dir(store.images_dir()) {
+            for entry in entries.flatten() {
+                let other = entry.file_name().to_string_lossy().to_string();
+                if other.starts_with("wallpaper-") && other != name {
+                    let _ = fs::remove_file(entry.path());
+                }
+            }
+        }
+    }
     Ok(name)
 }
 
@@ -62,6 +73,18 @@ pub fn set_cover(store: &Store, console_id: &str, rel_path: &str, source: &str) 
     Ok(name)
 }
 
+/// Stores downloaded art as the game's cover (same rules as `set_cover`). `ext` must be a trusted image extension.
+pub fn store_cover_bytes(store: &Store, console_id: &str, rel_path: &str, ext: &str, bytes: &[u8]) -> Result<String, String> {
+    if !IMAGE_EXTS.contains(&ext) {
+        return Err(format!("image_type|{}", ext));
+    }
+    store.ensure_dirs()?;
+    let name = format!("{}_{}.{}", cover_hash(console_id, rel_path), now_ms(), ext);
+    fs::write(store.covers_dir().join(&name), bytes).map_err(|e| format!("copy|{}", e))?;
+    remove_covers(store, console_id, rel_path, Some(&name));
+    Ok(name)
+}
+
 pub fn clear_cover(store: &Store, console_id: &str, rel_path: &str) {
     remove_covers(store, console_id, rel_path, None);
 }
@@ -70,6 +93,21 @@ pub fn clear_cover(store: &Store, console_id: &str, rel_path: &str) {
 mod tests {
     use super::*;
     use crate::store::temp_store;
+
+    #[test]
+    fn a_new_wallpaper_replaces_the_old_one() {
+        let store = temp_store("wallpaper");
+        let src = store.root.join("bg.jpg");
+        fs::write(&src, b"jpg").unwrap();
+        let first = import_image(&store, "wallpaper", "", src.to_str().unwrap()).unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(3));
+        let second = import_image(&store, "wallpaper", "", src.to_str().unwrap()).unwrap();
+        assert_ne!(first, second);
+        assert!(!store.images_dir().join(&first).exists() && store.images_dir().join(&second).exists());
+        let avatar = import_image(&store, "avatar", "", src.to_str().unwrap()).unwrap();
+        let _ = import_image(&store, "wallpaper", "", src.to_str().unwrap()).unwrap();
+        assert!(store.images_dir().join(avatar).exists());
+    }
 
     #[test]
     fn covers_replace_each_other() {
@@ -84,6 +122,16 @@ mod tests {
         assert!(store.covers_dir().join(&second).exists());
         clear_cover(&store, "ps2", "Game.iso");
         assert!(!store.covers_dir().join(&second).exists());
+    }
+
+    #[test]
+    fn downloaded_covers_replace_old_ones() {
+        let store = temp_store("cover-bytes");
+        let first = store_cover_bytes(&store, "ps2", "Game.iso", "png", b"png").unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(3));
+        let second = store_cover_bytes(&store, "ps2", "Game.iso", "jpg", b"jpg").unwrap();
+        assert!(!store.covers_dir().join(&first).exists() && store.covers_dir().join(&second).exists());
+        assert!(store_cover_bytes(&store, "ps2", "Game.iso", "exe", b"MZ").unwrap_err().starts_with("image_type"));
     }
 
     #[test]

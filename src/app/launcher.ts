@@ -10,6 +10,7 @@ import { refreshStats } from './state.js';
 import type { Game } from './types.js';
 import { h, wait } from './ui.js';
 import { gameArt } from './art.js';
+import { ratioOfConsole } from './shapes.js';
 
 let busy = false;
 
@@ -23,7 +24,7 @@ export async function launchGame(game: Game): Promise<void> {
   const overlay = h(
     'div',
     { class: 'launch-overlay', role: 'status', 'aria-live': 'polite' },
-    h('div', { class: 'launch-content' }, h('div', { class: 'launch-cover' }, gameArt(game, assetUrl('Covers', game.cover))), title, h('div', { class: 'loading-bar' }, h('i'))),
+    h('div', { class: 'launch-content' }, h('div', { class: 'launch-cover', style: `aspect-ratio:${ratioOfConsole(game.consoleId)}` }, gameArt(game, assetUrl('Covers', game.cover))), title, h('div', { class: 'loading-bar' }, h('i'))),
   );
   document.getElementById('layer-modal')!.appendChild(overlay);
   requestAnimationFrame(() => overlay.classList.add('is-in'));

@@ -181,6 +181,27 @@ fn walk(dir: &Path, rel: &Path, depth: usize, wanted: &HashSet<String>, out: &mu
     }
 }
 
+/// Programs found next to a PC game that are not the game itself (uninstallers, installers of
+/// runtime libraries, crash reporters...).
+fn is_helper_program(stem: &str) -> bool {
+    let name = stem.to_lowercase();
+    const HELPERS: [&str; 15] = [
+        "unins", "uninstall", "setup", "installer", "vcredist", "vc_redist", "dxsetup", "dotnet", "ndp", "crashhandler", "crashreport", "crashpad", "unitycrashhandler", "redist", "oalinst",
+    ];
+    HELPERS.iter().any(|h| name.starts_with(h) || name.contains(h) && *h != "setup" && *h != "ndp")
+}
+
+/// Games made of several files are launched through one of them: `eboot.bin` of a PS4 game is
+/// named after its folder rather than after itself.
+fn title_stem(path: &Path, stem: &str) -> String {
+    if stem.eq_ignore_ascii_case("eboot") {
+        if let Some(folder) = path.parent().and_then(|p| p.file_name()) {
+            return folder.to_string_lossy().to_string();
+        }
+    }
+    stem.to_string()
+}
+
 /// Files that other files already point to (tracks of a `.cue`, discs of an `.m3u`).
 fn referenced_files(found: &[(PathBuf, String)]) -> HashSet<String> {
     let mut referenced = HashSet::new();
@@ -249,7 +270,10 @@ pub fn scan_console(console: &Console, covers: &CoverIndex) -> Result<Vec<Game>,
         }
         let file_name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
         let stem = path.file_stem().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| file_name.clone());
-        let (title, region) = clean_title(&stem);
+        if ext == "exe" && is_helper_program(&stem) {
+            continue;
+        }
+        let (title, region) = clean_title(&title_stem(&path, &stem));
         let size = fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
         let hash = cover_hash(&console.id, &rel);
         games.push(Game {
@@ -272,6 +296,32 @@ pub fn scan_console(console: &Console, covers: &CoverIndex) -> Result<Vec<Game>,
 mod tests {
     use super::*;
     use crate::store::temp_store;
+
+    #[test]
+    fn pc_folders_list_games_not_installers() {
+        for helper in ["unins000", "Uninstall", "vcredist_x64", "VC_redist.x64", "dxsetup", "UnityCrashHandler64", "crashpad_handler", "setup", "dotNetFx45_Full_setup"] {
+            assert!(is_helper_program(helper), "{}", helper);
+        }
+        for game in ["Hades", "Celeste", "Game", "Launcher", "SupermarketSimulator", "NeedForSpeedUnbound"] {
+            assert!(!is_helper_program(game), "{}", game);
+        }
+    }
+
+    #[test]
+    fn exe_games_are_scanned_and_ps4_games_take_their_folder_name() {
+        let store = temp_store("pcgames");
+        let root = store.root.join("games");
+        fs::create_dir_all(root.join("Hades")).unwrap();
+        fs::write(root.join("Hades").join("Hades.exe"), b"x").unwrap();
+        fs::write(root.join("Hades").join("unins000.exe"), b"x").unwrap();
+        fs::create_dir_all(root.join("CUSA00001 Bloodborne")).unwrap();
+        fs::write(root.join("CUSA00001 Bloodborne").join("eboot.bin"), b"x").unwrap();
+        let pc = Console { id: "pc".into(), title: "PC".into(), rom_path: root.to_string_lossy().to_string(), extensions: vec!["exe".into(), "bin".into()], ..Default::default() };
+        let covers = CoverIndex::load(&store.covers_dir());
+        let games = scan_console(&pc, &covers).unwrap();
+        let titles: Vec<&str> = games.iter().map(|g| g.title.as_str()).collect();
+        assert_eq!(titles, vec!["CUSA00001 Bloodborne", "Hades"]);
+    }
 
     #[test]
     fn hash_is_stable_and_case_insensitive_on_path() {

@@ -3,7 +3,7 @@ import { h } from './ui.js';
 import type { Console } from './types.js';
 
 const ABBR: Record<string, string> = {
-  ps1: 'PS1', ps2: 'PS2', ps3: 'PS3', psp: 'PSP', gamecube: 'GC', wii: 'Wii', xbox360: '360', n64: 'N64', nds: 'NDS', gba: 'GBA', snes: 'SNES',
+  ps1: 'PS1', ps2: 'PS2', ps3: 'PS3', ps4: 'PS4', psp: 'PSP', gamecube: 'GC', wii: 'Wii', wiiu: 'WiiU', switch: 'NSW', switch2: 'NS2', '3ds': '3DS', xbox: 'XB', xbox360: '360', n64: 'N64', nds: 'NDS', gba: 'GBA', snes: 'SNES', nes: 'NES', megadrive: 'MD', dreamcast: 'DC', pc: 'PC',
 };
 
 export function abbreviation(console: Pick<Console, 'id' | 'preset' | 'title'>): string {

@@ -51,6 +51,11 @@ h1, h2, h3, p { margin: 0; }
   background: linear-gradient(135deg, rgb(var(--ink)), var(--accent-deep) 58%, rgb(var(--ink)));
 }
 .nxe[data-mood='system'] .mood-overlay { opacity: 1; }
+/* Optional user wallpaper: sits under every other layer and is dimmed so text stays readable. */
+.wallpaper { position: absolute; inset: 0; z-index: 0; opacity: 0; background: var(--wallpaper, none) center / cover no-repeat; transition: opacity 0.6s ease; }
+.wallpaper::after { content: ''; position: absolute; inset: 0; background: rgb(var(--bg-rgb, 4 8 16) / var(--wallpaper-dim, 0.45)); }
+[data-wallpaper='on'] .wallpaper { opacity: 1; }
+[data-wallpaper='on'] .blue-glow, [data-wallpaper='on'] .white-glow { opacity: 0.35; }
 .blue-glow, .white-glow { position: absolute; border-radius: 50%; z-index: 1; transition: background 0.8s ease; }
 .blue-glow { width: 900px; height: 900px; left: -180px; top: -300px; background: var(--glow-1); filter: blur(50px); }
 .white-glow { width: 1000px; height: 1000px; right: -300px; bottom: -400px; background: var(--glow-2); filter: blur(70px); }
@@ -89,6 +94,11 @@ h1, h2, h3, p { margin: 0; }
   transition: opacity 0.4s ease;
 }
 [data-scanlines='on'] .scanlines { opacity: 1; }
+
+/* The gamepad-orb logo shared with the website. */
+.logo-img, .boot-logo { display: block; border-radius: 50%; user-select: none; }
+.logo-img { width: 40px; height: 40px; filter: drop-shadow(0 0 12px rgb(var(--accent-rgb) / 0.55)); }
+.boot-logo { width: 84px; height: 84px; animation: boot-pop 0.6s var(--ease) both; filter: drop-shadow(0 0 26px rgb(var(--accent-rgb) / 0.6)); }
 
 /* ---------- top bar ---------- */
 

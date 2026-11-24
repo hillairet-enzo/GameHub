@@ -60,6 +60,7 @@ function onKeyDown(event: KeyboardEvent): void {
   const action = KEYS[event.key.toLowerCase()];
   if (!action) return;
   if (isTyping(event.target) && action !== 'confirm' && action !== 'back') return;
+  if (isTyping(event.target) && event.key === ' ') return; // a space in a text field is just a space
   if (isTyping(event.target) && event.key === 'Backspace') return;
   if (event.repeat && !REPEATABLE.has(action)) {
     event.preventDefault();

@@ -1,6 +1,6 @@
 // Shared application state: settings, stats and the scanned library.
 
-import { api, initApi, isTauri, setDataDir } from './api.js';
+import { api, assetUrl, initApi, isTauri, setDataDir } from './api.js';
 import { configureAudio } from './audio.js';
 import { accentOf, applyAccent } from './color.js';
 import { setLanguage } from './i18n.js';
@@ -37,6 +37,11 @@ export function applyPrefs(): void {
   root.dataset.motion = ui.reduceMotion ? 'reduced' : 'full';
   root.dataset.scanlines = ui.scanlines ? 'on' : 'off';
   applyAccent(root, accentOf(ui.theme, ui.accent));
+  const wallpaper = assetUrl('Images', ui.wallpaper);
+  root.dataset.wallpaper = wallpaper ? 'on' : 'off';
+  if (wallpaper) root.style.setProperty('--wallpaper', `url("${wallpaper}")`);
+  else root.style.removeProperty('--wallpaper');
+  root.style.setProperty('--wallpaper-dim', String(Math.min(90, Math.max(0, ui.wallpaperDim)) / 100));
   setLanguage(ui.language);
   configureAudio(ui.sound, ui.volume);
 }
@@ -103,6 +108,12 @@ export async function updateSettings(mutate: (settings: Settings) => void): Prom
 }
 
 // ---------- selectors ----------
+
+/** PC consoles run programs directly: they need no emulator. */
+export const isNative = (c: Console): boolean => Boolean(store.presets.find((p) => p.id === c.preset)?.native);
+
+/** A console is ready once it has a games folder and, unless it is a PC, an emulator. */
+export const isConfigured = (c: Console): boolean => Boolean((isNative(c) || c.emulatorPath) && c.romPath);
 
 export const consoleById = (id: string): Console | undefined => store.settings.consoles.find((c) => c.id === id);
 

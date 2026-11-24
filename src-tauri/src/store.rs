@@ -119,6 +119,29 @@ impl Store {
         Ok(())
     }
 
+    /// When the app version changes (an update), keeps a copy of the settings as they were,
+    /// so a problem with a new version can never cost the user their setup.
+    /// Returns the backup path when one was made.
+    pub fn backup_before_update(&self, app_version: &str) -> Option<PathBuf> {
+        let marker = self.root.join("version.txt");
+        let previous = fs::read_to_string(&marker).unwrap_or_default();
+        let previous = previous.trim();
+        if previous == app_version {
+            return None;
+        }
+        let mut made = None;
+        if self.settings_path().exists() {
+            let label = if previous.is_empty() { "older".to_string() } else { previous.to_string() };
+            let safe: String = label.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '.' || *c == '-').collect();
+            let target = self.root.join(format!("settings.before-update-from-{}.json", safe));
+            if fs::copy(self.settings_path(), &target).is_ok() {
+                made = Some(target);
+            }
+        }
+        let _ = fs::write(&marker, app_version);
+        made
+    }
+
     /// Removes images that are no longer referenced by the settings.
     pub fn collect_garbage(&self, settings: &Settings) {
         let mut keep: Vec<&str> = Vec::new();
@@ -127,6 +150,9 @@ impl Store {
         }
         if let Some(b) = &settings.profile.banner {
             keep.push(b);
+        }
+        if let Some(w) = &settings.ui.wallpaper {
+            keep.push(w);
         }
         for c in &settings.consoles {
             if let Some(i) = &c.image {
@@ -193,6 +219,11 @@ pub fn normalize(mut s: Settings) -> Settings {
         s.ui.accent = String::new();
     }
     s.ui.volume = if s.ui.volume.is_finite() { s.ui.volume.clamp(0.0, 1.0) } else { 0.6 };
+    s.ui.wallpaper_dim = s.ui.wallpaper_dim.min(90);
+    s.ui.steamgriddb_key = s.ui.steamgriddb_key.chars().filter(|c| c.is_ascii_alphanumeric()).take(64).collect();
+    if s.ui.wallpaper.as_deref().map(|w| w.is_empty() || w.contains('/') || w.contains('\\')).unwrap_or(false) {
+        s.ui.wallpaper = None;
+    }
 
     let mut seen: Vec<String> = Vec::new();
     for c in s.consoles.iter_mut() {
@@ -210,6 +241,9 @@ pub fn normalize(mut s: Settings) -> Settings {
         seen.push(id.clone());
         c.id = id;
 
+        if !presets::SHAPES.contains(&c.cover_shape.as_str()) {
+            c.cover_shape = String::new();
+        }
         c.emulator_path = c.emulator_path.trim().to_string();
         c.rom_path = c.rom_path.trim().to_string();
         c.args = c.args.trim().to_string();
@@ -252,6 +286,33 @@ pub fn temp_store(tag: &str) -> Store {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_wallpaper_survives_clean_up() {
+        let store = temp_store("wall-gc");
+        fs::write(store.images_dir().join("wallpaper-1.jpg"), b"x").unwrap();
+        fs::write(store.images_dir().join("stray.png"), b"x").unwrap();
+        let mut settings = Settings::default();
+        settings.ui.wallpaper = Some("wallpaper-1.jpg".into());
+        store.collect_garbage(&settings);
+        assert!(store.images_dir().join("wallpaper-1.jpg").exists());
+        assert!(!store.images_dir().join("stray.png").exists());
+    }
+
+    #[test]
+    fn updates_keep_a_copy_of_the_settings() {
+        let store = temp_store("update-backup");
+        // Fresh install: nothing to copy, version is remembered.
+        assert!(store.backup_before_update("0.2.2").is_none());
+        store.save_settings(&Settings::default()).unwrap();
+        // Same version again: no backup.
+        assert!(store.backup_before_update("0.2.2").is_none());
+        // New version: one copy named after the old one.
+        let backup = store.backup_before_update("0.3.0").unwrap();
+        assert!(backup.ends_with("settings.before-update-from-0.2.2.json"));
+        assert_eq!(fs::read_to_string(backup).unwrap(), fs::read_to_string(store.settings_path()).unwrap());
+        assert!(store.backup_before_update("0.3.0").is_none());
+    }
 
     #[test]
     fn slug_is_safe() {

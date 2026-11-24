@@ -57,6 +57,7 @@ pub fn initial_settings(store: &Store) -> Settings {
                 args,
                 extensions,
                 image,
+                cover_shape: String::new(),
             });
         }
     }

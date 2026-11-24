@@ -20,6 +20,12 @@ export interface UiPrefs {
   fullscreen: boolean;
   /** Colour of the "custom" theme, as `#rrggbb`. */
   accent: string;
+  /** Wallpaper: file name inside the Images folder. */
+  wallpaper: string | null;
+  /** How much the wallpaper is darkened, 0 to 90. */
+  wallpaperDim: number;
+  steamgriddbKey: string;
+  autoUpdate: boolean;
 }
 
 export interface Console {
@@ -31,6 +37,8 @@ export interface Console {
   args: string;
   extensions: string[];
   image: string | null;
+  /** Shape of the covers; empty means the usual one for this console. */
+  coverShape: string;
 }
 
 export interface Settings {
@@ -86,6 +94,10 @@ export interface Preset {
   extensions: string[];
   args: string;
   exeHints: string[];
+  /** Usual cover shape of this console. */
+  shape: string;
+  /** The games are programs that run by themselves (PC): no emulator needed. */
+  native: boolean;
 }
 
 export interface ScanResult {
@@ -97,4 +109,9 @@ export interface LegacyImport {
   username: string | null;
   totalSeconds: number;
   totalSessions: number;
+}
+
+export interface UpdateInfo {
+  version: string;
+  notes: string;
 }

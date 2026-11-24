@@ -54,6 +54,14 @@ pub struct UiPrefs {
     pub fullscreen: bool,
     /// Colour of the "custom" theme, as `#rrggbb`.
     pub accent: String,
+    /// Wallpaper behind the launcher: file name inside the `Images` folder.
+    pub wallpaper: Option<String>,
+    /// How much the wallpaper is darkened, 0 to 90 (per cent).
+    pub wallpaper_dim: u8,
+    /// Personal SteamGridDB API key, used to download missing covers. Empty = feature off.
+    pub steamgriddb_key: String,
+    /// Look for a new version when GameHub starts.
+    pub auto_update: bool,
 }
 
 impl Default for UiPrefs {
@@ -68,6 +76,10 @@ impl Default for UiPrefs {
             reduce_motion: false,
             fullscreen: true,
             accent: String::new(),
+            wallpaper: None,
+            wallpaper_dim: 45,
+            steamgriddb_key: String::new(),
+            auto_update: true,
         }
     }
 }
@@ -87,6 +99,9 @@ pub struct Console {
     pub extensions: Vec<String>,
     /// File name inside the `Images` folder.
     pub image: Option<String>,
+    /// Shape of the game covers (`dvd`, `bluray`, `tall`, `small`, `square`, `wide`, `poster`).
+    /// Empty means "the usual shape of this console".
+    pub cover_shape: String,
 }
 
 #[derive(Serialize, Clone, Debug, PartialEq)]
@@ -161,6 +176,10 @@ pub struct Preset {
     pub args: String,
     /// Executable name fragments used to recognise the emulator.
     pub exe_hints: Vec<String>,
+    /// Usual shape of the covers of this console.
+    pub shape: String,
+    /// The games are programs that run by themselves: no emulator needed (PC).
+    pub native: bool,
 }
 
 #[derive(Serialize, Clone, Debug, PartialEq)]

@@ -8,10 +8,13 @@ import { confirmDialog, promptDialog } from '../modal.js';
 import { DEFAULT_CUSTOM, GENERATED_THEMES, isHex, swatchOf } from '../color.js';
 import { go, reload, type ScreenFactory } from '../router.js';
 import { openTutorial } from '../tutorial.js';
-import { consoleTotals, on, refreshLibrary, store, updateSettings } from '../state.js';
+import { consoleTotals, isNative, on, refreshLibrary, store, updateSettings } from '../state.js';
 import type { LanguagePref, ThemeId } from '../types.js';
 import { clear, fmtDuration, h, icon, toast, type Child } from '../ui.js';
 import { gameArt } from '../art.js';
+import { askCoverKey, fetchMissingCovers } from '../onlineCovers.js';
+import { checkForUpdate } from '../updates.js';
+import { ratioOfConsole, SHAPE_IDS, shapeOf } from '../shapes.js';
 
 interface Item {
   el: HTMLElement;
@@ -25,6 +28,8 @@ interface PanelView {
   el: HTMLElement;
   items: Item[];
   grid?: HTMLElement;
+  /** Number of plain rows listed before the grid cells in `items`. */
+  gridStart?: number;
 }
 
 const THEMES: ThemeId[] = ['ocean', 'matrix', 'cyberpunk', 'midnight', 'sunset', 'rose', 'violet', 'lagoon', 'gold', 'custom'];
@@ -141,7 +146,7 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
         'div',
         { class: 'console-card' },
         h('div', { class: 'console-card-head' }, consoleEmblem(c, 'emblem-sm'), h('div', null, h('h3', null, c.title), h('p', null, store.scanErrors[c.id] ? t('settings.folderProblem') : t('home.games', { n: totals.count })))),
-        mk(t('settings.emulator'), mono(c.emulatorPath ? baseName(c.emulatorPath) : t('home.notConfigured'), !c.emulatorPath), () =>
+        isNative(c) ? null : mk(t('settings.emulator'), mono(c.emulatorPath ? baseName(c.emulatorPath) : t('home.notConfigured'), !c.emulatorPath), () =>
           mutate(async () => {
             const path = await pickExecutable(t('wizard.emulator'));
             if (!path) return;
@@ -182,6 +187,13 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
             if (!path) return;
             const name = await api.setImage('console', c.id, path);
             await updateSettings((s) => (s.consoles.find((x) => x.id === c.id)!.image = name));
+          }),
+        ),
+        mk(t('settings.coverShape'), mono(c.coverShape ? t(`shape.${c.coverShape}`) : `${t('shape.auto')} · ${t(`shape.${shapeOf(c)}`)}`, !c.coverShape), () =>
+          mutate(async () => {
+            const order = ['', ...SHAPE_IDS];
+            const next = order[(order.indexOf(c.coverShape) + 1) % order.length];
+            await updateSettings((s) => (s.consoles.find((x) => x.id === c.id)!.coverShape = next));
           }),
         ),
         mk(t('settings.remove'), icon('trash', 18), () =>
@@ -306,6 +318,34 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
       reload();
     };
 
+    // ----- wallpaper -----
+    const dimValue = h('span', { class: 'row-value-text' }, `${ui().wallpaperDim} %`);
+    const setDim = async (step: number) => {
+      const next = Math.min(90, Math.max(0, ui().wallpaperDim + step * 15));
+      if (next === ui().wallpaperDim) return;
+      await updateSettings((s) => (s.ui.wallpaperDim = next));
+      dimValue.textContent = `${next} %`;
+      sfx('move');
+    };
+    const wallpaperItems: Item[] = [
+      {
+        el: row(t('settings.wallpaper'), mono(ui().wallpaper ? t('settings.imageCustom') : t('settings.wallpaperNone'), !ui().wallpaper)),
+        run: () =>
+          mutate(async () => {
+            const path = await pickImage(t('settings.wallpaperPick'));
+            if (!path) return;
+            const name = await api.setImage('wallpaper', '', path);
+            await updateSettings((s) => (s.ui.wallpaper = name));
+          }),
+      },
+    ];
+    if (ui().wallpaper) {
+      wallpaperItems.push(
+        { el: h('div', { class: 'setting-row' }, h('div', { class: 'row-label' }, t('settings.wallpaperDim'), h('small', null, t('settings.wallpaperDimHint'))), h('div', { class: 'row-control' }, dimValue)), run: () => setDim(1), left: () => (void setDim(-1), true), right: () => (void setDim(1), true) },
+        { el: row(t('settings.wallpaperRemove'), icon('trash', 18)), run: () => mutate(async () => void (await updateSettings((s) => (s.ui.wallpaper = null)))) },
+      );
+    }
+
     const items: Item[] = [
       { el: h('div', { class: 'setting-row theme-row' }, h('div', { class: 'row-label' }, t('settings.theme'), h('small', null, t('settings.themeHint'))), h('div', { class: 'row-control' }, themeRow, themeName, picker)), run: () => (ui().theme === 'custom' ? picker.click() : setTheme(1)), left: () => (void setTheme(-1), true), right: () => (void setTheme(1), true) },
       toggleItem(t('settings.scanlines'), t('settings.scanlinesHint'), () => ui().scanlines, (v) => updateSettings((s) => (s.ui.scanlines = v)).then(() => undefined)),
@@ -317,6 +357,7 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
       }),
       { el: h('div', { class: 'setting-row' }, h('div', { class: 'row-label' }, t('settings.language')), h('div', { class: 'row-control' }, langValue)), run: () => setLang(1), left: () => (void setLang(-1), true), right: () => (void setLang(1), true) },
     ];
+    items.splice(1, 0, ...wallpaperItems);
     return { el: h('div', { class: 'panel' }, head(t('settings.appearance.title'), t('settings.appearance.desc')), items.map((i) => i.el)), items };
   }
 
@@ -361,7 +402,7 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
     const games = [...store.games].sort((a, b) => a.consoleTitle.localeCompare(b.consoleTitle) || a.title.localeCompare(b.title));
     const grid = h('div', { class: 'games-grid' });
     const items: Item[] = games.map((game) => {
-      const el = h('div', { class: 'game-card' }, h('div', { class: 'game-card-art' }, gameArt(game, assetUrl('Covers', game.cover))), h('div', { class: 'game-card-console' }, game.consoleTitle), h('div', { class: 'game-card-title' }, game.title), h('div', { class: 'game-card-action' }, t('settings.changeCover')));
+      const el = h('div', { class: 'game-card' }, h('div', { class: 'game-card-art', style: `--ratio:${ratioOfConsole(game.consoleId)}` }, gameArt(game, assetUrl('Covers', game.cover))), h('div', { class: 'game-card-console' }, game.consoleTitle), h('div', { class: 'game-card-title' }, game.title), h('div', { class: 'game-card-action' }, t('settings.changeCover')));
       grid.appendChild(el);
       return {
         el,
@@ -380,8 +421,33 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
           }),
       };
     });
-    const el = h('div', { class: 'panel' }, head(t('settings.covers.title'), t('settings.covers.desc')), games.length ? grid : h('p', { class: 'panel-empty' }, t('settings.noGames')));
-    return { el, items, grid: games.length ? grid : undefined };
+    const key = store.settings.ui.steamgriddbKey;
+    const keyRow: Item = {
+      el: row(t('settings.sgdbKey'), mono(key ? `••••${key.slice(-4)}` : t('home.notConfigured'), !key)),
+      run: () =>
+        mutate(async () => {
+          const value = await askCoverKey(key);
+          if (value === null) return;
+          await updateSettings((s) => (s.ui.steamgriddbKey = value.trim()));
+        }),
+    };
+    const fetchRow: Item = {
+      el: row(t('settings.fetchCovers'), icon('refresh', 18)),
+      run: async () => {
+        if (!store.settings.ui.steamgriddbKey) {
+          await mutate(async () => {
+            const value = await askCoverKey('');
+            if (value) await updateSettings((s) => (s.ui.steamgriddbKey = value));
+          });
+          if (!store.settings.ui.steamgriddbKey) return;
+        }
+        await fetchMissingCovers();
+        showPanel(menuIndex, 1);
+      },
+    };
+    const prefix = [keyRow, fetchRow];
+    const el = h('div', { class: 'panel' }, head(t('settings.covers.title'), t('settings.covers.desc')), prefix.map((i) => i.el), games.length ? grid : h('p', { class: 'panel-empty' }, t('settings.noGames')));
+    return { el, items: [...prefix, ...items], grid: games.length ? grid : undefined, gridStart: prefix.length };
   }
 
   function helpPanel(): PanelView {
@@ -407,6 +473,8 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
           toast(errorMessage(e), 'error');
         }
       } },
+      { el: row(t('settings.checkUpdate'), icon('refresh', 18)), run: () => checkForUpdate(true) },
+      toggleItem(t('settings.autoUpdate'), t('settings.autoUpdateHint'), () => store.settings.ui.autoUpdate, (v) => updateSettings((s) => (s.ui.autoUpdate = v)).then(() => undefined)),
       { el: row(t('settings.rescan'), icon('refresh', 18)), run: async () => {
         toast(t('lib.scanning'));
         await refreshLibrary();
@@ -484,26 +552,33 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
       }
     }
     const item = view.items[focus];
-    const cols = columns();
+    const start = view.gridStart ?? 0;
+    const inGrid = Boolean(view.grid) && focus >= start;
+    const cols = inGrid ? columns() : 1;
+    const rel = focus - start; // position inside the grid
+    const last = view.items.length - 1;
     switch (action) {
       case 'up':
-        if (focus - cols >= 0) {
+        if (inGrid ? rel - cols >= 0 : focus - 1 >= 0) {
           sfx('move');
-          setFocus(focus - cols);
+          setFocus(inGrid ? focus - cols : focus - 1);
+        } else if (inGrid && start > 0) {
+          sfx('move');
+          setFocus(start - 1);
         } else scrollContent(-1);
         return true;
       case 'down':
-        if (focus + cols < view.items.length) {
+        if (!inGrid ? focus + 1 <= last : rel + cols <= last - start) {
           sfx('move');
-          setFocus(focus + cols);
-        } else if (view.grid && focus < view.items.length - 1 && Math.floor(focus / cols) < Math.floor((view.items.length - 1) / cols)) {
+          setFocus(inGrid ? focus + cols : focus + 1);
+        } else if (inGrid && focus < last && Math.floor(rel / cols) < Math.floor((last - start) / cols)) {
           sfx('move');
-          setFocus(view.items.length - 1);
+          setFocus(last);
         } else scrollContent(1);
         return true;
       case 'left':
         if (item?.left?.()) return true;
-        if (view.grid && focus % cols !== 0) {
+        if (inGrid && rel % cols !== 0) {
           sfx('move');
           setFocus(focus - 1);
           return true;
@@ -514,7 +589,7 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
         return true;
       case 'right':
         if (item?.right?.()) return true;
-        if (view.grid && focus < view.items.length - 1) {
+        if (inGrid && focus < last) {
           sfx('move');
           setFocus(focus + 1);
         }

@@ -10,6 +10,7 @@ import { libraryScreen } from './screens/library.js';
 import { settingsScreen } from './screens/settings.js';
 import { buildShell, runBoot } from './shell.js';
 import { bootstrap, store, updateSettings } from './state.js';
+import { checkForUpdateOnStart } from './updates.js';
 import { h } from './ui.js';
 
 async function toggleFullscreen(): Promise<void> {
@@ -57,6 +58,7 @@ async function main(): Promise<void> {
   const shell = buildShell(root, () => go('/settings/profile'));
   startRouter(shell);
   // First launch: a short tutorial once the boot animation is over.
+  checkForUpdateOnStart();
   void runBoot(root).then(async () => {
     if (store.settings.tutorialSeen || store.settings.consoles.length > 0) return;
     await openTutorial();

@@ -7,18 +7,44 @@ const STORAGE_KEY = 'gamehub-demo-v1';
 const params = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
 
 const PRESETS: Preset[] = [
-  { id: 'ps1', title: 'PlayStation', emulator: 'DuckStation', extensions: ['cue', 'chd', 'pbp', 'iso', 'm3u', 'bin'], args: '-batch -fullscreen -- {rom}', exeHints: ['duckstation'] },
-  { id: 'ps2', title: 'PlayStation 2', emulator: 'PCSX2', extensions: ['iso', 'chd', 'cso', 'zso', 'gz', 'bin'], args: '-batch -fullscreen -- {rom}', exeHints: ['pcsx2'] },
-  { id: 'ps3', title: 'PlayStation 3', emulator: 'RPCS3', extensions: ['iso'], args: '--no-gui {rom}', exeHints: ['rpcs3'] },
-  { id: 'psp', title: 'PSP', emulator: 'PPSSPP', extensions: ['iso', 'cso', 'chd', 'pbp'], args: '--fullscreen {rom}', exeHints: ['ppsspp'] },
-  { id: 'gamecube', title: 'GameCube', emulator: 'Dolphin', extensions: ['iso', 'gcm', 'rvz', 'ciso', 'gcz'], args: '-b -e {rom}', exeHints: ['dolphin'] },
-  { id: 'wii', title: 'Wii', emulator: 'Dolphin', extensions: ['iso', 'wbfs', 'rvz', 'wad', 'ciso', 'gcz'], args: '-b -e {rom}', exeHints: ['dolphin'] },
-  { id: 'xbox360', title: 'Xbox 360', emulator: 'Xenia', extensions: ['iso', 'xex', 'zar'], args: '{rom}', exeHints: ['xenia'] },
-  { id: 'n64', title: 'Nintendo 64', emulator: 'simple64 / Project64', extensions: ['z64', 'n64', 'v64'], args: '{rom}', exeHints: ['simple64', 'project64'] },
-  { id: 'nds', title: 'Nintendo DS', emulator: 'melonDS', extensions: ['nds', 'dsi'], args: '{rom}', exeHints: ['melonds'] },
-  { id: 'gba', title: 'Game Boy Advance', emulator: 'mGBA', extensions: ['gba', 'gb', 'gbc', 'zip'], args: '-f {rom}', exeHints: ['mgba'] },
-  { id: 'snes', title: 'Super Nintendo', emulator: 'Snes9x', extensions: ['sfc', 'smc', 'zip'], args: '{rom}', exeHints: ['snes9x'] },
+  { id: 'ps1', title: 'PlayStation', emulator: 'DuckStation', extensions: ['cue', 'chd', 'pbp', 'iso', 'm3u', 'bin'], args: '-batch -fullscreen -- {rom}', exeHints: ['duckstation'], shape: 'square', native: false },
+  { id: 'ps2', title: 'PlayStation 2', emulator: 'PCSX2', extensions: ['iso', 'chd', 'cso', 'zso', 'gz', 'bin'], args: '-batch -fullscreen -- {rom}', exeHints: ['pcsx2'], shape: 'dvd', native: false },
+  { id: 'ps3', title: 'PlayStation 3', emulator: 'RPCS3', extensions: ['iso'], args: '--no-gui {rom}', exeHints: ['rpcs3'], shape: 'bluray', native: false },
+  { id: 'ps4', title: 'PlayStation 4', emulator: 'shadPS4', extensions: ['bin', 'pkg'], args: '-g {rom}', exeHints: ['shadps4'], shape: 'bluray', native: false },
+  { id: 'psp', title: 'PSP', emulator: 'PPSSPP', extensions: ['iso', 'cso', 'chd', 'pbp'], args: '--fullscreen {rom}', exeHints: ['ppsspp'], shape: 'tall', native: false },
+  { id: 'gamecube', title: 'GameCube', emulator: 'Dolphin', extensions: ['iso', 'gcm', 'rvz', 'ciso', 'gcz'], args: '-b -e {rom}', exeHints: ['dolphin'], shape: 'dvd', native: false },
+  { id: 'wii', title: 'Wii', emulator: 'Dolphin', extensions: ['iso', 'wbfs', 'rvz', 'wad', 'ciso', 'gcz'], args: '-b -e {rom}', exeHints: ['dolphin'], shape: 'dvd', native: false },
+  { id: 'wiiu', title: 'Wii U', emulator: 'Cemu', extensions: ['wua', 'wud', 'wux', 'rpx', 'wad'], args: '-f -g {rom}', exeHints: ['cemu'], shape: 'bluray', native: false },
+  { id: 'switch', title: 'Nintendo Switch', emulator: 'Eden / Ryujinx', extensions: ['nsp', 'xci', 'nsz', 'xcz'], args: '-f -g {rom}', exeHints: ['eden', 'yuzu', 'citron', 'ryujinx'], shape: 'tall', native: false },
+  { id: 'switch2', title: 'Nintendo Switch 2', emulator: 'Switch 2', extensions: ['nsp', 'xci', 'nsz', 'xcz'], args: '{rom}', exeHints: [], shape: 'tall', native: false },
+  { id: '3ds', title: 'Nintendo 3DS', emulator: 'Azahar / Citra', extensions: ['3ds', 'cci', 'cxi', 'cia', '3dsx'], args: '-f {rom}', exeHints: ['azahar', 'citra'], shape: 'small', native: false },
+  { id: 'nds', title: 'Nintendo DS', emulator: 'melonDS', extensions: ['nds', 'dsi'], args: '{rom}', exeHints: ['melonds'], shape: 'small', native: false },
+  { id: 'xbox', title: 'Xbox', emulator: 'xemu', extensions: ['iso', 'xiso'], args: '-dvd_path {rom}', exeHints: ['xemu'], shape: 'dvd', native: false },
+  { id: 'xbox360', title: 'Xbox 360', emulator: 'Xenia', extensions: ['iso', 'xex', 'zar'], args: '{rom}', exeHints: ['xenia'], shape: 'dvd', native: false },
+  { id: 'n64', title: 'Nintendo 64', emulator: 'simple64 / Project64', extensions: ['z64', 'n64', 'v64'], args: '{rom}', exeHints: ['simple64', 'project64'], shape: 'wide', native: false },
+  { id: 'gba', title: 'Game Boy Advance', emulator: 'mGBA', extensions: ['gba', 'gb', 'gbc', 'zip'], args: '-f {rom}', exeHints: ['mgba'], shape: 'square', native: false },
+  { id: 'snes', title: 'Super Nintendo', emulator: 'Snes9x', extensions: ['sfc', 'smc', 'zip'], args: '{rom}', exeHints: ['snes9x'], shape: 'wide', native: false },
+  { id: 'pc', title: 'PC', emulator: '', extensions: ['exe', 'lnk', 'bat'], args: '{rom}', exeHints: [], shape: 'poster', native: true },
 ];
+
+const OTHER: Preset = { id: 'other', title: '', emulator: '', extensions: ['iso', 'bin', 'cue', 'chd', 'zip', '7z', 'rom'], args: '{rom}', exeHints: [], shape: 'dvd', native: false };
+
+// Name -> console, like presets::match_name in Rust (simplified).
+const ALIASES: Record<string, string[]> = {
+  ps1: ['ps1', 'psx', 'psone', 'playstation', 'playstation1'], ps2: ['ps2', 'playstation2'], ps3: ['ps3', 'playstation3'], ps4: ['ps4', 'playstation4'],
+  psp: ['psp'], gamecube: ['gamecube', 'gc', 'ngc'], wii: ['wii'], wiiu: ['wiiu'], switch: ['switch', 'switch1', 'nsw', 'nintendoswitch'], switch2: ['switch2', 'ns2', 'nintendoswitch2'],
+  '3ds': ['3ds', 'n3ds'], nds: ['nds', 'ds', 'nintendods'], xbox: ['xbox', 'originalxbox'], xbox360: ['xbox360', '360'], n64: ['n64', 'nintendo64'],
+  gba: ['gba', 'gameboyadvance'], snes: ['snes', 'supernintendo', 'superfamicom'], pc: ['pc', 'exe', 'windows', 'win', 'steam', 'jeuxpc', 'jeuxexe', 'pcgames', 'epic', 'gog'],
+};
+
+function matchConsole(name: string): Preset {
+  const q = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  let best: [string, number] | null = null;
+  for (const [id, list] of Object.entries(ALIASES)) {
+    for (const a of list) if (q === a || (a.length >= 4 && q.includes(a))) if (!best || a.length > best[1]) best = [id, a.length];
+  }
+  return PRESETS.find((p) => p.id === best?.[0]) ?? OTHER;
+}
 
 // Invented titles only: the demo ships no real game names or artwork.
 const TITLES = [
@@ -50,6 +76,7 @@ function seedConsole(preset: string, title: string, image: string | null): Conso
     args: p.args,
     extensions: p.extensions,
     image,
+    coverShape: '',
   };
 }
 
@@ -62,7 +89,7 @@ function seed(): DemoState {
     version: 2,
     tutorialSeen: !empty,
     profile: { username: 'Alex', avatar: 'mock:200:1', banner: 'mock:210:1' },
-    ui: { language: params.get('lang') === 'en' ? 'en' : params.get('lang') === 'fr' ? 'fr' : 'auto', theme: (params.get('theme') as Settings['ui']['theme']) || 'ocean', clock24: true, sound: false, volume: 0.6, scanlines: true, reduceMotion: false, fullscreen: false, accent: /^#[0-9a-f]{6}$/i.test(params.get('accent') ?? '') ? params.get('accent')! : '' },
+    ui: { language: params.get('lang') === 'en' ? 'en' : params.get('lang') === 'fr' ? 'fr' : 'auto', theme: (params.get('theme') as Settings['ui']['theme']) || 'ocean', clock24: true, sound: false, volume: 0.6, scanlines: true, reduceMotion: false, fullscreen: false, autoUpdate: true, steamgriddbKey: params.has('key') ? 'demo1234' : '', wallpaper: params.has('wallpaper') ? 'mock:300:1' : null, wallpaperDim: 45, accent: /^#[0-9a-f]{6}$/i.test(params.get('accent') ?? '') ? params.get('accent')! : '' },
     consoles,
   };
   const stats: Stats = { totalSeconds: 0, totalSessions: 0, games: {} };
@@ -171,6 +198,8 @@ export async function mockInvoke(cmd: string, args: Record<string, unknown> = {}
       return null;
     case 'list_presets':
       return PRESETS;
+    case 'match_console':
+      return matchConsole(String(args.name ?? ''));
     case 'guess_args': {
       const name = String(args.emulatorPath ?? '').split(/[\\/]/).pop()!.toLowerCase();
       return PRESETS.find((p) => p.exeHints.some((h) => name.includes(h)))?.args ?? null;
@@ -179,6 +208,14 @@ export async function mockInvoke(cmd: string, args: Record<string, unknown> = {}
       const result: ScanResult = { games: [], errors: [] };
       for (const c of state.settings.consoles) result.games.push(...gamesFor(c));
       return result;
+    }
+    case 'fetch_game_cover': {
+      if (!state.settings.ui.steamgriddbKey) throw new Error('sgdb_nokey|');
+      await delay(400);
+      const name = `mock:${hash(String(args.title)) % 360}:${1 + (hash(String(args.relPath)) % 3)}`;
+      state.covers[`${args.consoleId}/${args.relPath}`] = name;
+      persist();
+      return name;
     }
     case 'set_game_cover': {
       const name = String(args.sourcePath);
@@ -206,6 +243,15 @@ export async function mockInvoke(cmd: string, args: Record<string, unknown> = {}
       const outcome: LaunchOutcome = { seconds, exitCode: 0, failedEarly: false, counted: true };
       return outcome;
     }
+    case 'check_update':
+      await delay(500);
+      return params.has('update') ? { version: '0.3.0', notes: '' } : null;
+    case 'install_update':
+      await delay(1500);
+      return null;
+    case 'open_url':
+      window.open(String(args.url), '_blank');
+      return null;
     case 'set_fullscreen':
     case 'open_data_dir':
     case 'quit_app':

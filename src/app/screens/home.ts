@@ -7,7 +7,7 @@ import { pushInput } from '../input.js';
 import { launchGame } from '../launcher.js';
 import { confirmDialog } from '../modal.js';
 import { go, setMood, type ScreenFactory } from '../router.js';
-import { consoleTotals, lastPlayedGame, on, store } from '../state.js';
+import { consoleTotals, isConfigured, lastPlayedGame, on, store } from '../state.js';
 import type { Console } from '../types.js';
 import { fmtDuration, h, icon } from '../ui.js';
 
@@ -25,7 +25,7 @@ function buildCards(): Card[] {
   const { consoles } = store.settings;
   const cards: Card[] = consoles.map((c) => {
     const totals = consoleTotals(c.id);
-    const configured = c.emulatorPath && c.romPath;
+    const configured = isConfigured(c);
     return {
       id: `console:${c.id}`,
       kind: 'console',
