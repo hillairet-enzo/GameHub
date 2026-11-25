@@ -26,6 +26,7 @@ export interface UiPrefs {
   wallpaperDim: number;
   steamgriddbKey: string;
   autoUpdate: boolean;
+  discordPresence: boolean;
 }
 
 export interface Console {

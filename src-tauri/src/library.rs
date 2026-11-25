@@ -202,6 +202,13 @@ fn title_stem(path: &Path, stem: &str) -> String {
     stem.to_string()
 }
 
+/// Display title of a game from its path inside the console folder, the same one the scan shows.
+pub fn title_of(rel_path: &str) -> String {
+    let path = Path::new(rel_path);
+    let stem = path.file_stem().map(|s| s.to_string_lossy().to_string()).unwrap_or_default();
+    clean_title(&title_stem(path, &stem)).0
+}
+
 /// Files that other files already point to (tracks of a `.cue`, discs of an `.m3u`).
 fn referenced_files(found: &[(PathBuf, String)]) -> HashSet<String> {
     let mut referenced = HashSet::new();
@@ -328,6 +335,13 @@ mod tests {
         assert_eq!(cover_hash("ps2", "A/B.iso"), cover_hash("ps2", "a/b.ISO"));
         assert_ne!(cover_hash("ps2", "x.iso"), cover_hash("wii", "x.iso"));
         assert_eq!(fnv1a("hello"), 0xa430d84680aabd0b);
+    }
+
+    #[test]
+    fn a_game_title_can_be_found_from_its_path() {
+        assert_eq!(title_of("Devil May Cry (Europe).iso"), "Devil May Cry");
+        assert_eq!(title_of("PS4/CUSA01234/eboot.bin"), "CUSA01234");
+        assert_eq!(title_of("Hades/Hades.exe"), "Hades");
     }
 
     #[test]

@@ -89,7 +89,7 @@ function seed(): DemoState {
     version: 2,
     tutorialSeen: !empty,
     profile: { username: 'Alex', avatar: 'mock:200:1', banner: 'mock:210:1' },
-    ui: { language: params.get('lang') === 'en' ? 'en' : params.get('lang') === 'fr' ? 'fr' : 'auto', theme: (params.get('theme') as Settings['ui']['theme']) || 'ocean', clock24: true, sound: false, volume: 0.6, scanlines: true, reduceMotion: false, fullscreen: false, autoUpdate: true, steamgriddbKey: params.has('key') ? 'demo1234' : '', wallpaper: params.has('wallpaper') ? 'mock:300:1' : null, wallpaperDim: 45, accent: /^#[0-9a-f]{6}$/i.test(params.get('accent') ?? '') ? params.get('accent')! : '' },
+    ui: { language: params.get('lang') === 'en' ? 'en' : params.get('lang') === 'fr' ? 'fr' : 'auto', theme: (params.get('theme') as Settings['ui']['theme']) || 'ocean', clock24: true, sound: false, volume: 0.6, scanlines: true, reduceMotion: false, fullscreen: false, autoUpdate: true, discordPresence: true, steamgriddbKey: params.has('key') ? 'demo1234' : '', wallpaper: params.has('wallpaper') ? 'mock:300:1' : null, wallpaperDim: 45, accent: /^#[0-9a-f]{6}$/i.test(params.get('accent') ?? '') ? params.get('accent')! : '' },
     consoles,
   };
   const stats: Stats = { totalSeconds: 0, totalSessions: 0, games: {} };

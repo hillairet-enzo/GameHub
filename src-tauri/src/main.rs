@@ -7,6 +7,7 @@ mod launch;
 mod library;
 mod migrate;
 mod model;
+mod presence;
 mod presets;
 mod store;
 
@@ -21,6 +22,16 @@ type CmdResult<T> = Result<T, String>;
 
 struct AppState {
     launching: AtomicBool,
+    presence: presence::Presence,
+}
+
+/// What Discord should show while no game is running.
+fn idle_status(app: &AppHandle, enabled: bool) -> presence::Status {
+    if !enabled {
+        return presence::Status::Off;
+    }
+    let since = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0);
+    presence::Status::Browsing { version: format!("GameHub v{}", app.package_info().version), since }
 }
 
 /// Every user gets their own data folder (`%LOCALAPPDATA%`, `~/Library/Application Support`, `~/.local/share`).
@@ -47,8 +58,13 @@ fn get_settings(app: AppHandle) -> CmdResult<Settings> {
 }
 
 #[tauri::command]
-fn save_settings(app: AppHandle, settings: Settings) -> CmdResult<Settings> {
-    store(&app)?.save_settings(&settings)
+fn save_settings(app: AppHandle, state: State<'_, AppState>, settings: Settings) -> CmdResult<Settings> {
+    let saved = store(&app)?.save_settings(&settings)?;
+    // The Discord switch takes effect at once (a running game keeps its own status).
+    if !state.launching.load(Ordering::SeqCst) {
+        state.presence.set(idle_status(&app, saved.ui.discord_presence));
+    }
+    Ok(saved)
 }
 
 #[tauri::command]
@@ -160,6 +176,11 @@ async fn run_game(app: &AppHandle, window: &WebviewWindow, console_id: &str, rel
         .ok_or_else(|| format!("console_missing|{}", console_id))?;
     let prepared = launch::prepare(&console, rel_path)?;
 
+    if settings.ui.discord_presence {
+        let since = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0);
+        app.state::<AppState>().presence.set(presence::Status::Playing { title: library::title_of(rel_path), console: console.title.clone(), since });
+    }
+
     // GameHub stays visible on its launch screen for a few seconds, then minimises (not
     // hides) so it can always be brought back from the taskbar.
     let was_fullscreen = window.is_fullscreen().unwrap_or(false);
@@ -184,6 +205,7 @@ async fn run_game(app: &AppHandle, window: &WebviewWindow, console_id: &str, rel
         let _ = window.set_fullscreen(true);
     }
     let _ = window.set_focus();
+    app.state::<AppState>().presence.set(idle_status(app, settings.ui.discord_presence));
 
     let outcome = outcome??;
     if outcome.counted {
@@ -283,11 +305,12 @@ fn main() {
         builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
     }
     builder
-        .manage(AppState { launching: AtomicBool::new(false) })
+        .manage(AppState { launching: AtomicBool::new(false), presence: presence::Presence::new() })
         .setup(|app| {
             if let Ok(store) = store(app.handle()) {
                 if let Ok(settings) = store.load_settings() {
                     store.collect_garbage(&settings);
+                    app.state::<AppState>().presence.set(idle_status(app.handle(), settings.ui.discord_presence));
                     let _ = store.backup_before_update(&app.package_info().version.to_string());
                     if let Some(window) = app.get_webview_window("main") {
                         let _ = window.set_fullscreen(settings.ui.fullscreen);

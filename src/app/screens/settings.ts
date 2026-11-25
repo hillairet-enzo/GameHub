@@ -475,6 +475,7 @@ export const settingsScreen: ScreenFactory = ({ host, params, query }) => {
       } },
       { el: row(t('settings.checkUpdate'), icon('refresh', 18)), run: () => checkForUpdate(true) },
       toggleItem(t('settings.autoUpdate'), t('settings.autoUpdateHint'), () => store.settings.ui.autoUpdate, (v) => updateSettings((s) => (s.ui.autoUpdate = v)).then(() => undefined)),
+      toggleItem(t('settings.discord'), t('settings.discordHint'), () => store.settings.ui.discordPresence, (v) => updateSettings((s) => (s.ui.discordPresence = v)).then(() => undefined)),
       { el: row(t('settings.rescan'), icon('refresh', 18)), run: async () => {
         toast(t('lib.scanning'));
         await refreshLibrary();

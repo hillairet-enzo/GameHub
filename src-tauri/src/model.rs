@@ -62,6 +62,8 @@ pub struct UiPrefs {
     pub steamgriddb_key: String,
     /// Look for a new version when GameHub starts.
     pub auto_update: bool,
+    /// Show the running game on the player's Discord profile.
+    pub discord_presence: bool,
 }
 
 impl Default for UiPrefs {
@@ -80,6 +82,7 @@ impl Default for UiPrefs {
             wallpaper_dim: 45,
             steamgriddb_key: String::new(),
             auto_update: true,
+            discord_presence: true,
         }
     }
 }
